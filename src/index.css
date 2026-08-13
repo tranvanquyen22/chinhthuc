@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #f8f9fa;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    color: #1f2937;
+  }
+}
+
+.bg-navy {
+  background-color: #0F2C59;
+}
+.bg-navy-dark {
+  background-color: #0A1E3F;
+}
+.bg-navy-light {
+  background-color: #1A3B6E;
+}
+.text-navy {
+  color: #0F2C59;
+}
+.border-navy {
+  border-color: #0F2C59;
+}
+
+.bg-orange-custom {
+  background-color: #FF6B00;
+}
+.bg-orange-hover {
+  background-color: #E65100;
+}
+.text-orange-custom {
+  color: #FF6B00;
+}
+
+.bg-pattern {
+  background-image: radial-gradient(#1B2E4B 0.75px, transparent 0.75px);
+  background-size: 12px 12px;
+  opacity: 0.15;
+}
+
+.product-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(15, 44, 89, 0.15);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
