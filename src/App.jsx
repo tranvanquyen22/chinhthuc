@@ -16,6 +16,7 @@ import ShopSettingsModal from './components/ShopSettingsModal';
 import BroadcastAnnouncementModal from './components/BroadcastAnnouncementModal';
 import TaxiBookingModal from './components/TaxiBookingModal';
 import UserLocationModal from './components/UserLocationModal';
+import JobsModal from './components/JobsModal';
 import MaintenanceOverlay from './components/MaintenanceOverlay';
 import Footer from './components/Footer';
 import { fetchCloudSystemThemeConfig, subscribeSystemThemeRealtime, getSystemThemeConfig } from './lib/themeEngine';
@@ -74,6 +75,7 @@ function AppContent() {
   const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
   const [isTaxiModalOpen, setIsTaxiModalOpen] = useState(false);
   const [isUserLocationOpen, setIsUserLocationOpen] = useState(false);
+  const [isJobsOpen, setIsJobsOpen] = useState(false);
   const [attachedChatProduct, setAttachedChatProduct] = useState(null);
   const [refreshProductsTrigger, setRefreshProductsTrigger] = useState(0);
 
@@ -210,6 +212,7 @@ function AppContent() {
                 onOpenTopUp={() => setIsTopUpOpen(true)}
                 onOpenOrders={() => setIsOrdersOpen(true)}
                 onOpenTaxiModal={() => setIsTaxiModalOpen(true)}
+                onOpenJobsModal={() => setIsJobsOpen(true)}
               />
             )}
 
@@ -317,6 +320,12 @@ function AppContent() {
       <UserLocationModal 
         isOpen={isUserLocationOpen}
         onClose={() => setIsUserLocationOpen(false)}
+      />
+
+      {/* Quick Job Search & Recruitment Suite Modal */}
+      <JobsModal 
+        isOpen={isJobsOpen}
+        onClose={() => setIsJobsOpen(false)}
       />
 
       {/* Footer */}

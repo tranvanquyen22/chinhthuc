@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTopUp, onOpenOrders, onOpenTaxiModal }) {
+export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTopUp, onOpenOrders, onOpenTaxiModal, onOpenJobsModal }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const mainSlides = [
@@ -76,7 +76,7 @@ export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTo
       title: 'Việc Làm TQ',
       icon: 'fa-solid fa-briefcase',
       bg: 'bg-gradient-to-br from-blue-600 to-indigo-700',
-      action: () => alert('💼 Phân hệ Việc Làm TQ: Đang cập nhật hơn 200+ vị trí tuyển dụng mới!')
+      action: onOpenJobsModal
     },
     {
       id: 'FLASH_SALE',
