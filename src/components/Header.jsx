@@ -51,6 +51,13 @@ export default function Header({
 
   const unreadCount = announcements.filter(a => !readIds.includes(a.id)).length;
 
+  const handleGoHome = () => {
+    setActiveTab('home');
+    setActiveCategory('ALL');
+    if (setSearchQuery) setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <header className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-md sticky top-0 z-40 font-sans border-b border-red-800">
       
@@ -60,7 +67,7 @@ export default function Header({
         {/* LOGO THƯƠNG HIỆU */}
         <div 
           className="flex items-center gap-2 cursor-pointer group shrink-0"
-          onClick={() => { setActiveTab('home'); setActiveCategory('ALL'); }}
+          onClick={handleGoHome}
         >
           <div className="w-9 h-9 bg-white text-red-600 rounded-xl flex items-center justify-center font-black text-lg shadow-md group-hover:scale-105 transition-transform">
             TQ
@@ -173,7 +180,7 @@ export default function Header({
       <nav className="bg-red-700 text-white border-t border-red-500/50 shadow-inner">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center space-x-1.5 overflow-x-auto scrollbar-none text-xs font-bold py-1.5">
           <button 
-            onClick={() => { setActiveTab('home'); setActiveCategory('ALL'); }}
+            onClick={handleGoHome}
             className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
               activeTab === 'home' && activeCategory === 'ALL' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
