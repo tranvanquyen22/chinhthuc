@@ -157,14 +157,20 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  // Sign In with Email and Password (Hỗ trợ cả Supabase Auth Cloud & Tài khoản do Admin khởi tạo)
-  const signIn = async (email, password) => {
-    const cleanEmail = (email || '').trim().toLowerCase();
+  // Sign In with Email / Phone and Password (Đồng bộ đa thiết bị toàn cầu 100%)
+  const signIn = async (identifier, password) => {
+    const cleanInput = (identifier || '').trim().toLowerCase();
+    const cleanPhoneDigits = cleanInput.replace(/\s+/g, '');
+
+    let targetEmail = cleanInput;
+    if (!cleanInput.includes('@')) {
+      targetEmail = `${cleanPhoneDigits}@tqstore.vn`;
+    }
 
     // 1. Thử đăng nhập qua Supabase Auth Cloud
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
+        email: targetEmail,
         password
       });
 
@@ -178,25 +184,35 @@ export const AuthProvider = ({ children }) => {
     // 2. Đồng bộ CSDL Đám mây Supabase: Kiểm tra danh sách tài khoản toàn hệ thống Realtime Cloud
     try {
       const usersList = await getCloudRegisteredUsers();
-      const matchUser = usersList.find(
-        (u) => u.email?.toLowerCase() === cleanEmail && (!u.password || u.password === password)
-      );
+      const matchUser = usersList.find((u) => {
+        const uEmail = (u.email || '').trim().toLowerCase();
+        const uPhone = (u.phone || '').replace(/\s+/g, '');
+
+        const isEmailMatch = uEmail === cleanInput || uEmail === targetEmail;
+        const isPhoneMatch = uPhone && uPhone === cleanPhoneDigits;
+        
+        // Kiểm tra mật khẩu (nếu có lưu mật khẩu trong DB hoặc khớp Supabase)
+        const isPasswordMatch = !u.password || u.password === password;
+
+        return (isEmailMatch || isPhoneMatch) && isPasswordMatch;
+      });
 
       if (matchUser) {
         if (matchUser.is_locked) {
           throw new Error('❌ Tài khoản này đã bị Super Admin khóa an toàn. Vui lòng liên hệ Quản trị viên!');
         }
-        const isSuperAdmin = 
-          cleanEmail.includes('admin') || 
-          cleanEmail === 'tqstore2212@gmail.com' || 
-          cleanEmail === 'admin@tqstore.vn';
 
-        const role = matchUser.role || (isSuperAdmin ? 'SUPER_ADMIN' : 'USER');
+        const isSuperAdmin = 
+          cleanInput.includes('admin') || 
+          cleanInput === 'tqstore2212@gmail.com' || 
+          matchUser.role === 'SUPER_ADMIN';
+
+        const role = matchUser.role || (isSuperAdmin ? 'SUPER_ADMIN' : 'CUSTOMER');
         const mockUserObj = {
-          id: matchUser.id || `user_${cleanEmail}`,
-          email: cleanEmail,
+          id: matchUser.id || `user_${matchUser.email}`,
+          email: matchUser.email,
           user_metadata: {
-            full_name: matchUser.name || cleanEmail.split('@')[0],
+            full_name: matchUser.name || matchUser.email.split('@')[0],
             phone: matchUser.phone || '',
             role: role
           }
@@ -207,10 +223,10 @@ export const AuthProvider = ({ children }) => {
         setSession({ user: mockUserObj });
 
         setUserProfile({
-          email: cleanEmail,
-          name: matchUser.name || cleanEmail.split('@')[0],
+          email: matchUser.email,
+          name: matchUser.name || matchUser.email.split('@')[0],
           role: role,
-          walletBalance: matchUser.walletBalance || 0,
+          walletBalance: matchUser.wallet_balance || matchUser.walletBalance || 0,
           coins: matchUser.coins || 0,
           phone: matchUser.phone || '',
           avatar: ''
@@ -219,12 +235,11 @@ export const AuthProvider = ({ children }) => {
         return { user: mockUserObj };
       }
     } catch (e) {
-      if (e.message && e.message.includes('khóa an toàn')) throw e;
-      console.error('Cloud users login error:', e);
+      console.error('getCloudRegisteredUsers signIn error:', e);
+      if (e.message?.includes('khóa an toàn')) throw e;
     }
 
-    // Nếu không khớp tài khoản nào
-    throw new Error('Email hoặc mật khẩu không chính xác!');
+    throw new Error('❌ Email / Số điện thoại hoặc mật khẩu không chính xác!');
   };
 
   // Sign Out
