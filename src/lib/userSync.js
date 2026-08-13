@@ -6,41 +6,51 @@ const LOCAL_STORAGE_KEY = 'tq_registered_users';
 export const getCloudRegisteredUsers = async () => {
   let cloudUsers = [];
 
-  // Try fetching from profiles table (Auto-created via Auth Trigger)
+  // 1.1 Fetch from tq_registered_users (Contains encrypted/plain credentials across devices)
+  let tqUsers = [];
   try {
-    const { data: profilesData } = await supabase
+    const { data } = await supabase
+      .from('tq_registered_users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data && Array.isArray(data)) {
+      tqUsers = data;
+    }
+  } catch (err) {
+    console.warn('tq_registered_users fetch notice:', err?.message);
+  }
+
+  // 1.2 Fetch from profiles table (Auto-created via Auth Trigger)
+  let profilesData = [];
+  try {
+    const { data } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (profilesData && Array.isArray(profilesData) && profilesData.length > 0) {
-      cloudUsers = [...profilesData];
+    if (data && Array.isArray(data)) {
+      profilesData = data;
     }
   } catch (e) {
     console.warn('profiles fetch notice:', e?.message);
   }
 
-  // Try fetching from tq_registered_users table
-  try {
-    const { data, error } = await supabase
-      .from('tq_registered_users')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data && Array.isArray(data) && data.length > 0) {
-      // Merge unique by email
-      const mergedMap = {};
-      [...cloudUsers, ...data].forEach(u => {
-        const mail = (u.email || '').toLowerCase();
-        if (mail && !mergedMap[mail]) {
-          mergedMap[mail] = u;
-        }
-      });
-      cloudUsers = Object.values(mergedMap);
+  // 1.3 Merge unique by email, preserving password & credentials from tq_registered_users
+  const mergedMap = {};
+  [...profilesData, ...tqUsers].forEach(u => {
+    const mail = (u.email || '').trim().toLowerCase();
+    if (mail) {
+      mergedMap[mail] = {
+        ...(mergedMap[mail] || {}),
+        ...u,
+        // Ensure password is not overwritten if missing
+        password: u.password || mergedMap[mail]?.password || ''
+      };
     }
-  } catch (err) {
-    console.warn('tq_registered_users fetch notice:', err?.message);
-  }
+  });
+
+  cloudUsers = Object.values(mergedMap);
 
   if (cloudUsers.length > 0) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cloudUsers));
