@@ -141,6 +141,19 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    // Tự động đồng bộ tài khoản vừa đăng ký vào CSDL cho Admin quản lý
+    try {
+      await saveCloudUser({
+        email,
+        name: name || email.split('@')[0],
+        role: 'CUSTOMER',
+        created_at: new Date().toISOString()
+      });
+    } catch (e) {
+      console.warn('signUp saveCloudUser notice:', e);
+    }
+
     return data;
   };
 

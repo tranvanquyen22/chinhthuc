@@ -4,6 +4,23 @@ const LOCAL_STORAGE_KEY = 'tq_registered_users';
 
 // 1. Fetch Registered Users from Supabase Cloud DB with LocalStorage Fallback
 export const getCloudRegisteredUsers = async () => {
+  let cloudUsers = [];
+
+  // Try fetching from profiles table (Auto-created via Auth Trigger)
+  try {
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (profilesData && Array.isArray(profilesData) && profilesData.length > 0) {
+      cloudUsers = [...profilesData];
+    }
+  } catch (e) {
+    console.warn('profiles fetch notice:', e?.message);
+  }
+
+  // Try fetching from tq_registered_users table
   try {
     const { data, error } = await supabase
       .from('tq_registered_users')
@@ -11,12 +28,23 @@ export const getCloudRegisteredUsers = async () => {
       .order('created_at', { ascending: false });
 
     if (!error && data && Array.isArray(data) && data.length > 0) {
-      // Sync cloud data to local storage as offline cache
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-      return data;
+      // Merge unique by email
+      const mergedMap = {};
+      [...cloudUsers, ...data].forEach(u => {
+        const mail = (u.email || '').toLowerCase();
+        if (mail && !mergedMap[mail]) {
+          mergedMap[mail] = u;
+        }
+      });
+      cloudUsers = Object.values(mergedMap);
     }
   } catch (err) {
-    console.warn('Supabase Cloud Users table notice:', err?.message);
+    console.warn('tq_registered_users fetch notice:', err?.message);
+  }
+
+  if (cloudUsers.length > 0) {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cloudUsers));
+    return cloudUsers;
   }
 
   // LocalStorage Fallback
@@ -38,7 +66,7 @@ export const saveCloudUser = async (userObj) => {
     name: userObj.name || cleanEmail.split('@')[0],
     phone: userObj.phone || '',
     password: userObj.password || '',
-    role: userObj.role || 'USER',
+    role: userObj.role || 'CUSTOMER',
     is_locked: !!userObj.is_locked,
     created_at: userObj.created_at || new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -55,9 +83,15 @@ export const saveCloudUser = async (userObj) => {
     console.error('LocalStorage save error:', e);
   }
 
-  // Supabase Cloud DB update
+  // Supabase Cloud DB update (upsert into both tables for 100% sync)
   try {
     await supabase.from('tq_registered_users').upsert(payload, { onConflict: 'email' });
+    await supabase.from('profiles').upsert({
+      email: cleanEmail,
+      name: payload.name,
+      role: payload.role,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'email' });
   } catch (err) {
     console.warn('Supabase Cloud User Save Notice:', err?.message);
   }
