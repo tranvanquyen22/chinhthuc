@@ -173,7 +173,7 @@ BEGIN
     END IF;
 END $$;
 
--- BẢO MẬT CÁC BẢNG QUA ROW LEVEL SECURITY (RLS POLICIES)
+-- BẢO MẬT CÁC BẢNG QUA ROW LEVEL SECURITY (RLS POLICIES CHẤP NHẬN SELECT, INSERT, UPDATE, UPSERT)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tq_registered_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
@@ -183,16 +183,16 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.system_announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tq_platform_config ENABLE ROW LEVEL SECURITY;
 
--- CÁC CHÍNH SÁCH BẢO MẬT RLS (ALLOW READ/WRITE POLICIES)
+-- CÁC CHÍNH SÁCH BẢO MẬT RLS (MỞ QUYỀN ALL CHO TRUY VẤN DỮ LIỆU ĐỒNG BỘ ĐÁM MÂY)
 DROP POLICY IF EXISTS "Allow public read profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Allow public insert profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Allow public read reg users" ON public.tq_registered_users;
 DROP POLICY IF EXISTS "Allow public insert reg users" ON public.tq_registered_users;
+DROP POLICY IF EXISTS "Allow public all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Allow public all reg users" ON public.tq_registered_users;
 
-CREATE POLICY "Allow public read profiles" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Allow public insert profiles" ON public.profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public read reg users" ON public.tq_registered_users FOR SELECT USING (true);
-CREATE POLICY "Allow public insert reg users" ON public.tq_registered_users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public all profiles" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public all reg users" ON public.tq_registered_users FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow public read products" ON public.products;
 DROP POLICY IF EXISTS "Allow public insert products" ON public.products;
