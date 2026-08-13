@@ -7,25 +7,31 @@ import {
   markAnnouncementAsRead
 } from '../lib/announcements';
 
-export default function BroadcastAnnouncementModal() {
+export default function BroadcastAnnouncementModal({ isOpen = false, onClose }) {
   const [announcements, setAnnouncements] = useState(getSystemAnnouncements());
   const [readIds, setReadIds] = useState(getReadAnnouncementIds());
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [internalOpenModal, setInternalOpenModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [toastNotification, setToastNotification] = useState(null);
 
+  const isModalActive = isOpen || internalOpenModal;
+
+  const handleCloseModal = () => {
+    setInternalOpenModal(false);
+    if (onClose) onClose();
+  };
+
   useEffect(() => {
-    // 1. Tải danh sách thông báo từ Supabase (Khách mới vào sau vẫn xem được)
     fetchCloudAnnouncements().then(data => {
       if (data && data.length > 0) {
         setAnnouncements(data);
       }
     });
 
-    // 2. Lắng nghe thông báo Realtime từ Admin đẩy xuống lập tức
     const unsubscribe = subscribeAnnouncementsRealtime((newBroadcast) => {
       setAnnouncements(prev => [newBroadcast, ...prev]);
       setToastNotification(newBroadcast);
+      window.dispatchEvent(new Event('announcements_updated'));
     });
 
     return () => unsubscribe();
@@ -36,7 +42,9 @@ export default function BroadcastAnnouncementModal() {
   const handleOpenAnnouncement = (item) => {
     setSelectedAnnouncement(item);
     markAnnouncementAsRead(item.id);
-    setReadIds(getReadAnnouncementIds());
+    const updatedIds = getReadAnnouncementIds();
+    setReadIds(updatedIds);
+    window.dispatchEvent(new Event('announcements_updated'));
   };
 
   const handleCloseDetail = () => {
@@ -110,8 +118,8 @@ export default function BroadcastAnnouncementModal() {
       )}
 
       {/* 3. MODAL DANH SÁCH THÔNG BÁO HỆ THỐNG (SYSTEM ANNOUNCEMENT LIST MODAL) */}
-      {isOpenModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+      {isModalActive && (
+        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border-2 border-amber-400 max-h-[85vh] overflow-y-auto animate-in zoom-in-95 duration-200 font-sans text-xs">
             
             {/* Header */}
@@ -131,7 +139,7 @@ export default function BroadcastAnnouncementModal() {
               </div>
 
               <button 
-                onClick={() => setIsOpenModal(false)}
+                onClick={handleCloseModal}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-black cursor-pointer text-xs"
               >
                 ✕

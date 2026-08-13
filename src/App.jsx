@@ -69,6 +69,7 @@ function AppContent() {
   const [isCoinsModalOpen, setIsCoinsModalOpen] = useState(false);
   const [isSuperAdminOpen, setIsSuperAdminOpen] = useState(false);
   const [isShopSettingsOpen, setIsShopSettingsOpen] = useState(false);
+  const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
   const [attachedChatProduct, setAttachedChatProduct] = useState(null);
   const [refreshProductsTrigger, setRefreshProductsTrigger] = useState(0);
 
@@ -189,6 +190,7 @@ function AppContent() {
         onOpenOrders={() => setIsOrdersOpen(true)}
         onOpenUserDashboard={() => setIsUserDashboardOpen(true)}
         onOpenCoinsModal={() => setIsCoinsModalOpen(true)}
+        onOpenAnnouncements={() => setIsAnnouncementsOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -294,7 +296,10 @@ function AppContent() {
       />
 
       {/* Broadcast Announcement Modal & Floating Widget */}
-      <BroadcastAnnouncementModal />
+      <BroadcastAnnouncementModal 
+        isOpen={isAnnouncementsOpen}
+        onClose={() => setIsAnnouncementsOpen(false)}
+      />
 
       {/* Footer */}
       <Footer />

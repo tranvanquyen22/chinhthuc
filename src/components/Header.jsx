@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getSystemAnnouncements, fetchCloudAnnouncements, subscribeAnnouncementsRealtime, getReadAnnouncementIds } from '../lib/announcements';
 
 export default function Header({
   activeTab,
@@ -17,11 +18,39 @@ export default function Header({
   onOpenTopUp,
   onOpenOrders,
   onOpenUserDashboard,
-  onOpenCoinsModal
+  onOpenCoinsModal,
+  onOpenAnnouncements
 }) {
   const { user, userProfile, signOut } = useAuth();
-  const [notificationCount, setNotificationCount] = useState(0);
+  const [announcements, setAnnouncements] = useState(getSystemAnnouncements());
+  const [readIds, setReadIds] = useState(getReadAnnouncementIds());
   const [lang, setLang] = useState('VIE');
+
+  useEffect(() => {
+    fetchCloudAnnouncements().then(data => {
+      if (data && data.length > 0) setAnnouncements(data);
+    });
+
+    const unsubscribe = subscribeAnnouncementsRealtime((newBroadcast) => {
+      setAnnouncements(prev => [newBroadcast, ...prev]);
+    });
+
+    const handleStorageChange = () => {
+      setReadIds(getReadAnnouncementIds());
+      setAnnouncements(getSystemAnnouncements());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('announcements_updated', handleStorageChange);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('announcements_updated', handleStorageChange);
+    };
+  }, []);
+
+  const unreadCount = announcements.filter(a => !readIds.includes(a.id)).length;
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-100 font-sans">
@@ -164,16 +193,16 @@ export default function Header({
               <i className="fa-solid fa-globe text-sm"></i>
             </button>
 
-            {/* Icon Thông Báo (Chuông) */}
+            {/* Icon Thông Báo (Chuông Trên Cùng - Nhận Thông Báo Realtime từ Admin) */}
             <button 
-              onClick={() => { setNotificationCount(0); alert("🔔 Thông báo mới: Bạn có mã giảm giá 10% TQ10 và ưu đãi nạp ví TQ Pay!"); }}
-              className="relative w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
-              title="Thông báo hệ thống"
+              onClick={onOpenAnnouncements}
+              className="relative w-8.5 h-8.5 rounded-full flex items-center justify-center text-gray-700 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
+              title="Thông báo toàn hệ thống từ Admin"
             >
-              <i className="fa-solid fa-bell text-sm"></i>
-              {notificationCount > 0 && (
-                <span className="absolute top-1 right-1 bg-red-500 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center animate-pulse">
-                  {notificationCount}
+              <i className={`fa-solid fa-bell text-base ${unreadCount > 0 ? 'text-red-600 animate-bounce' : 'text-gray-700'}`}></i>
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white font-black text-[9px] min-w-[17px] h-4 rounded-full flex items-center justify-center border-2 border-white px-1 shadow-md animate-pulse font-mono">
+                  {unreadCount}
                 </span>
               )}
             </button>
