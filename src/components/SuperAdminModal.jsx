@@ -31,12 +31,14 @@ import { getFeaturedPromotions, fetchCloudFeaturedPromotions, saveFeaturedPromot
 import { getSystemVouchers, fetchCloudVouchers, saveSystemVouchers } from '../lib/vouchers';
 import { getSystemBankConfig, fetchCloudSystemBankConfig, saveSystemBankConfig, generateVietQRUrl } from '../lib/systemBankConfig';
 import { generateRandomVietnameseName, getRandomAiReview, saveSyntheticReview, updateProductSalesCountCloud, getStoredProductReviews } from '../lib/productReviews';
+import { SYSTEM_THEME_PRESETS, getSystemThemeConfig, saveSystemThemeConfig } from '../lib/themeEngine';
 
 export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
   const { userProfile, systemStatus, updateSystemStatus, featureLocks, toggleFeatureLock, impersonateUser } = useAuth();
   const [activeAdminTab, setActiveAdminTab] = useState('products'); // 'products', 'users', 'audit_logs', 'master_control', 'stats', 'security', 'settings'
   const [copiedLinkMap, setCopiedLinkMap] = useState({}); // { [email_or_id]: true }
   const [systemBankForm, setSystemBankForm] = useState(getSystemBankConfig());
+  const [currentActiveTheme, setCurrentActiveTheme] = useState(getSystemThemeConfig());
   const [editSalesModal, setEditSalesModal] = useState(null); // { id, title, salesCount }
   const [addReviewModal, setAddReviewModal] = useState(null); // { id, title, userName, rating, comment }
   const [featuredPromotions, setFeaturedPromotions] = useState(getFeaturedPromotions());
@@ -823,6 +825,21 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
     setAddReviewModal(null);
   };
 
+  // 27. ĐỔI GIAO DIỆN HỆ THỐNG THỜI GIAN THỰC (REALTIME THEME SWITCHER)
+  const handleChangeSystemTheme = async (themeKey) => {
+    const updatedTheme = await saveSystemThemeConfig(themeKey, userProfile?.email || 'Super Admin');
+    setCurrentActiveTheme(updatedTheme);
+
+    recordAuditLog(
+      userProfile.email,
+      userProfile.role,
+      'ĐỔI GIAO DIỆN HỆ THỐNG REALTIME',
+      `Super Admin chuyển giao diện toàn hệ thống sang theme [${updatedTheme.name}]`
+    );
+    setAuditLogsList(getAuditLogs());
+    alert(`🎉 Đã áp dụng giao diện [${updatedTheme.name}] thời gian thực toàn hệ thống! Tất cả người dùng sẽ thấy giao diện đổi ngay lập tức.`);
+  };
+
   // Preset Lịch lọc P&L
   const handlePresetChange = (preset) => {
     setPlPreset(preset);
@@ -1313,6 +1330,28 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
 
                 <span className="bg-amber-950 text-amber-300 border border-amber-400 font-black text-[10px] px-2 py-0.5 rounded-full font-mono">
                   AI REVIEWS
+                </span>
+              </button>
+
+              {/* Nút 2.15: Đổi Giao Diện Toàn Hệ Thống Thời Gian Thực (Realtime Theme) */}
+              <button 
+                onClick={() => setActiveAdminTab('system_theme')}
+                className={`w-full p-2.5 rounded-2xl flex items-center justify-between transition-all cursor-pointer ${
+                  activeAdminTab === 'system_theme' 
+                    ? 'bg-amber-400 text-navy shadow-md font-black translate-x-1' 
+                    : 'text-purple-300 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <i className="fa-solid fa-palette text-base text-purple-400"></i>
+                  <div className="text-left">
+                    <span className="block text-xs">Đổi Giao Diện Realtime</span>
+                    <span className="text-[9px] font-normal opacity-80">Thay đổi màu sắc & theme tức thì</span>
+                  </div>
+                </div>
+
+                <span className="bg-purple-950 text-amber-300 border border-purple-400 font-black text-[10px] px-2 py-0.5 rounded-full font-mono">
+                  THEMES
                 </span>
               </button>
 
@@ -4596,6 +4635,94 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                               <span>THÊM REVIEW AI</span>
                             </button>
                           </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TÍNH NĂNG CHUYÊN BIỆT: ĐỔI GIAO DIỆN TOÀN HỆ THỐNG THỜI GIAN THỰC (REALTIME THEME SWITCHER) */}
+            {activeAdminTab === 'system_theme' && (
+              <div className="space-y-5 font-sans text-xs">
+                
+                {/* BANNER ĐẦU TRANG */}
+                <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white p-5 rounded-3xl border border-purple-400/50 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 bg-purple-500/30 text-purple-300 border border-purple-400/50 rounded-2xl flex items-center justify-center text-xl font-black shadow-inner">
+                      <i className="fa-solid fa-palette"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-black text-sm text-amber-300 uppercase tracking-wider">
+                        🎨 ĐỔI GIAO DIỆN TOÀN HỆ THỐNG THỜI GIAN THỰC (SUPABASE REALTIME THEME)
+                      </h4>
+                      <p className="text-[11px] text-purple-200 mt-0.5 font-medium">
+                        Super Admin thay đổi giao diện ➔ Tất cả thiết bị của khách hàng & shop trên toàn thế giới chuyển màu lập tức không cần F5!
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="bg-purple-900 text-amber-300 border border-purple-400 font-black text-xs px-3 py-1.5 rounded-full shrink-0">
+                    REALTIME BROADCAST
+                  </span>
+                </div>
+
+                {/* DANH SÁCH 5 BỘ THEMES ĐẮC SẮC */}
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h4 className="font-extrabold text-navy text-xs uppercase tracking-wider">
+                      🌈 Chọn Bộ Giao Diện Muốn Áp Dụng Cho Toàn Bộ Hệ Thống
+                    </h4>
+                    <span className="text-gray-500 font-mono text-[11px]">
+                      Theme đang chạy: <strong className="text-purple-700 font-black">{currentActiveTheme.name || '🌙 Đêm Sang Trọng'}</strong>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {Object.values(SYSTEM_THEME_PRESETS).map((t) => {
+                      const isCurrent = (currentActiveTheme.id || currentActiveTheme.theme_name) === t.id;
+
+                      return (
+                        <div 
+                          key={t.id}
+                          className={`p-4 rounded-2xl border-2 space-y-3 shadow-sm transition-all flex flex-col justify-between ${
+                            isCurrent ? 'border-amber-400 ring-2 ring-amber-300/40 bg-purple-50/40' : 'border-gray-200 hover:border-purple-300 bg-white'
+                          }`}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-black text-navy text-xs">{t.name}</h5>
+                              {isCurrent && (
+                                <span className="bg-amber-400 text-navy font-black text-[9px] px-2 py-0.5 rounded-full uppercase">
+                                  ĐANG DÙNG
+                                </span>
+                              )}
+                            </div>
+
+                            <div className={`h-16 rounded-xl p-2.5 flex items-center justify-center text-white font-bold text-[11px] shadow-inner ${t.bgGradient}`}>
+                              {t.name}
+                            </div>
+
+                            <div className="flex items-center justify-between text-[10px] text-gray-500 font-mono pt-1">
+                              <span>Màu chính: <strong style={{ color: t.primaryColor }}>{t.primaryColor}</strong></span>
+                              <span>Điểm nhấn: <strong style={{ color: t.accentColor }}>{t.accentColor}</strong></span>
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={() => handleChangeSystemTheme(t.id)}
+                            disabled={isCurrent}
+                            className={`w-full font-black text-xs py-2.5 rounded-xl uppercase tracking-wider transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 ${
+                              isCurrent 
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white shadow-md'
+                            }`}
+                          >
+                            <i className="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                            <span>{isCurrent ? 'ĐANG KÍCH HOẠT' : '🎨 ÁP DỤNG REALTIME'}</span>
+                          </button>
                         </div>
                       );
                     })}

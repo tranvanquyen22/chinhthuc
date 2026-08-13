@@ -15,10 +15,26 @@ import SuperAdminModal from './components/SuperAdminModal';
 import ShopSettingsModal from './components/ShopSettingsModal';
 import MaintenanceOverlay from './components/MaintenanceOverlay';
 import Footer from './components/Footer';
+import { fetchCloudSystemThemeConfig, subscribeSystemThemeRealtime, getSystemThemeConfig } from './lib/themeEngine';
 
 function AppContent() {
   const { userProfile, isImpersonating, exitImpersonation } = useAuth();
+  const [currentTheme, setCurrentTheme] = useState(getSystemThemeConfig());
   const [activeTab, setActiveTab] = useState('home');
+
+  useEffect(() => {
+    // 1. Lấy giá trị theme từ Supabase khi user truy cập trang
+    fetchCloudSystemThemeConfig().then(t => {
+      if (t) setCurrentTheme(t);
+    });
+
+    // 2. Thiết lập kết nối Supabase Realtime để lắng nghe sự thay đổi giao diện từ Admin mà không cần F5
+    const unsubscribe = subscribeSystemThemeRealtime((newTheme) => {
+      setCurrentTheme(newTheme);
+    });
+
+    return () => unsubscribe();
+  }, []);
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchCategory, setSearchCategory] = useState('ALL');
