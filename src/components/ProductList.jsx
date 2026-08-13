@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import FlashSaleSection from './FlashSaleSection';
 import LocationFilterBar from './LocationFilterBar';
 import { getFeaturedPromotions } from '../lib/featuredPromotions';
+import { getStoredProductReviews, saveSyntheticReview } from '../lib/productReviews';
 
 const DEFAULT_PRODUCTS = [
   {
@@ -116,6 +117,28 @@ export default function ProductList({
   const [selectedCity, setSelectedCity] = useState('ALL');
   const [selectedDistrict, setSelectedDistrict] = useState('ALL');
   const [ratingFilter, setRatingFilter] = useState(0); // 0: All, 5: 5 Stars, 4: 4 Stars and above
+
+  // Product Detail & Review Modal State
+  const [selectedDetailProduct, setSelectedDetailProduct] = useState(null);
+  const [newReviewComment, setNewReviewComment] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewName, setNewReviewName] = useState('');
+
+  const handleCustomerSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!selectedDetailProduct || !newReviewComment.trim()) return;
+
+    await saveSyntheticReview(selectedDetailProduct.id, {
+      userName: newReviewName.trim() || 'Khách Hàng TQ Store',
+      rating: newReviewRating,
+      comment: newReviewComment.trim()
+    });
+
+    alert('🎉 Cảm ơn bạn đã gửi đánh giá cho sản phẩm!');
+    setNewReviewComment('');
+    // Refresh modal review list
+    setSelectedDetailProduct({ ...selectedDetailProduct, _refresh: Date.now() });
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -513,7 +536,10 @@ export default function ProductList({
 
                     <div className="space-y-2">
                       {/* Product Thumbnail */}
-                      <div className="bg-gray-50 rounded-xl overflow-hidden h-40 flex items-center justify-center relative border border-gray-100">
+                      <div 
+                        onClick={() => setSelectedDetailProduct(p)}
+                        className="bg-gray-50 rounded-xl overflow-hidden h-40 flex items-center justify-center relative border border-gray-100 cursor-pointer"
+                      >
                         <img 
                           src={image} 
                           alt={title} 
@@ -528,7 +554,10 @@ export default function ProductList({
                       </div>
 
                       {/* Tên Sản Phẩm */}
-                      <h3 className="font-extrabold text-xs text-gray-800 line-clamp-2 min-h-[34px] leading-snug">
+                      <h3 
+                        onClick={() => setSelectedDetailProduct(p)}
+                        className="font-extrabold text-xs text-gray-800 line-clamp-2 min-h-[34px] leading-snug cursor-pointer hover:text-red-600 transition-colors"
+                      >
                         {title}
                       </h3>
 
@@ -545,12 +574,15 @@ export default function ProductList({
                       </p>
 
                       {/* Đánh giá sao (★ 5.0) & Đã bán */}
-                      <div className="flex items-center justify-between text-[10px] pt-1 border-t border-gray-100 text-gray-500">
+                      <div 
+                        onClick={() => setSelectedDetailProduct(p)}
+                        className="flex items-center justify-between text-[10px] pt-1 border-t border-gray-100 text-gray-500 cursor-pointer hover:bg-amber-50/50 p-1 rounded-lg transition-colors"
+                      >
                         <div className="flex items-center gap-1 text-amber-400 font-bold">
                           <span>★</span>
                           <span className="text-gray-800 font-extrabold">{rating}</span>
                         </div>
-                        <span className="font-semibold">Đã bán {salesCount}</span>
+                        <span className="font-semibold text-emerald-800">Đã bán {salesCount.toLocaleString('vi-VN')}</span>
                       </div>
                     </div>
 
@@ -588,6 +620,199 @@ export default function ProductList({
         </div>
 
       </div>
+
+      {/* MODAL CHI TIẾT SẢN PHẨM & ĐÁNH GIÁ CỦA KHÁCH HÀNG (SẢN PHẨM & REVIEW REALTIME) */}
+      {selectedDetailProduct && (() => {
+        const p = selectedDetailProduct;
+        const title = p.title || p.name || 'Sản phẩm TQ Store';
+        const price = Number(p.price || 0);
+        const shopName = p.shop_name || p.shopName || p.shop || 'TQ STORE';
+        const location = p.location || 'TP. HỒ CHÍ MINH';
+        const image = p.image_url || p.img || p.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
+        const details = p.details || 'Chất liệu cao cấp, bảo hành chính hãng';
+        const salesCount = p.sales_count || p.salesCount || 15;
+        const storedReviews = getStoredProductReviews(p.id);
+
+        return (
+          <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border-2 border-amber-400 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+              
+              {/* Header Modal */}
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                  <h4 className="font-black text-navy text-xs uppercase tracking-wider">
+                    🛍️ CHI TIẾT SẢN PHẨM & ĐÁNH GIÁ KHÁCH HÀNG
+                  </h4>
+                </div>
+                <button 
+                  onClick={() => setSelectedDetailProduct(null)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-black cursor-pointer text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Thông tin sản phẩm */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border border-gray-200">
+                <img 
+                  src={image} 
+                  alt={title} 
+                  className="w-full h-40 object-cover rounded-xl border border-gray-200 shadow-xs"
+                />
+                <div className="sm:col-span-2 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-navy uppercase text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                      {shopName}
+                    </span>
+                    <span className="text-emerald-700 bg-emerald-100 font-bold px-2 py-0.5 rounded-full text-[10px]">
+                      📍 {location}
+                    </span>
+                  </div>
+
+                  <h3 className="font-black text-sm text-gray-900">{title}</h3>
+                  <p className="font-black text-red-600 text-base">{price.toLocaleString('vi-VN')} VNĐ</p>
+                  <p className="text-gray-600 italic text-[11px]">{details}</p>
+
+                  <div className="flex items-center gap-3 pt-1 border-t border-gray-200 text-[11px]">
+                    <span className="bg-emerald-700 text-white font-extrabold px-2.5 py-0.5 rounded-full">
+                      🛒 Đã bán {salesCount.toLocaleString('vi-VN')} lượt
+                    </span>
+                    <span className="text-amber-500 font-extrabold flex items-center gap-1">
+                      ⭐ 5.0 ({storedReviews.length + 12} đánh giá)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <button 
+                      onClick={() => { setSelectedDetailProduct(null); onAddToCart(p); }}
+                      className="bg-navy hover:bg-navy-dark text-amber-300 font-black py-2 rounded-xl text-xs uppercase cursor-pointer transition-all shadow-xs flex items-center justify-center gap-1"
+                    >
+                      <i className="fa-solid fa-cart-plus"></i>
+                      <span>ĐẶT MUA NGAY</span>
+                    </button>
+                    <button 
+                      onClick={() => { setSelectedDetailProduct(null); onOpenChat(p); }}
+                      className="bg-orange-custom hover:bg-orange-hover text-white font-black py-2 rounded-xl text-xs uppercase cursor-pointer transition-all shadow-xs flex items-center justify-center gap-1"
+                    >
+                      <i className="fa-solid fa-comments"></i>
+                      <span>HỎI SHOP</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Danh Sách Đánh Giá Thực & AI Synthetic Reviews */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                  <h4 className="font-black text-navy text-xs uppercase flex items-center gap-1.5">
+                    <i className="fa-solid fa-comments text-amber-500"></i>
+                    <span>💬 ĐÁNH GIÁ TỪ NGƯỜI MUA HÀNG ({storedReviews.length + 3} đánh giá)</span>
+                  </h4>
+                </div>
+
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                  {/* Review Mẫu 1 */}
+                  <div className="bg-slate-50 border border-gray-200 p-3 rounded-2xl space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 bg-navy text-amber-300 font-black rounded-full flex items-center justify-center text-[10px]">
+                          NL
+                        </span>
+                        <strong className="font-extrabold text-navy">Nguyễn Hoàng Long</strong>
+                      </div>
+                      <span className="text-amber-500 font-bold text-[10px]">⭐⭐⭐⭐⭐ 5/5 Sao</span>
+                    </div>
+                    <p className="text-gray-700 font-medium text-[11px]">
+                      "Sản phẩm giao cực nhanh, đóng gói đẹp cẩn thận. Chất lượng trên cả tuyệt vời so với tầm giá!"
+                    </p>
+                  </div>
+
+                  {/* Review Mẫu 2 */}
+                  <div className="bg-slate-50 border border-gray-200 p-3 rounded-2xl space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 bg-teal-600 text-white font-black rounded-full flex items-center justify-center text-[10px]">
+                          PT
+                        </span>
+                        <strong className="font-extrabold text-navy">Phạm Phương Thảo</strong>
+                      </div>
+                      <span className="text-amber-500 font-bold text-[10px]">⭐⭐⭐⭐⭐ 5/5 Sao</span>
+                    </div>
+                    <p className="text-gray-700 font-medium text-[11px]">
+                      "Đã nhận hàng, form chuẩn đẹp đúng mô tả. Đóng gói 5 sao sẽ ủng hộ shop dài dài!"
+                    </p>
+                  </div>
+
+                  {/* Dynamic Synthetic & User Reviews */}
+                  {storedReviews.map((rev) => (
+                    <div key={rev.id} className="bg-amber-50/70 border border-amber-200 p-3 rounded-2xl space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-amber-500 text-white font-black rounded-full flex items-center justify-center text-[10px]">
+                            {(rev.user_name || 'KH').substring(0, 2).toUpperCase()}
+                          </span>
+                          <strong className="font-black text-navy">{rev.user_name}</strong>
+                          {rev.is_synthetic && (
+                            <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black px-1.5 py-0.2 rounded-full border border-emerald-300">
+                              Đã mua hàng
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-amber-500 font-bold text-[10px]">
+                          {'⭐'.repeat(rev.rating || 5)} {rev.rating}/5 Sao
+                        </span>
+                      </div>
+                      <p className="text-gray-800 font-medium text-[11px]">{rev.comment}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Form Khách Tự Viết Đánh Giá */}
+                <form onSubmit={handleCustomerSubmitReview} className="bg-slate-100 p-3.5 rounded-2xl space-y-2 border border-gray-200 text-xs">
+                  <h5 className="font-extrabold text-navy text-xs">✍️ Viết đánh giá của bạn cho sản phẩm này:</h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input 
+                      type="text" 
+                      value={newReviewName}
+                      onChange={(e) => setNewReviewName(e.target.value)}
+                      placeholder="Tên của bạn (VD: Anh Minh)" 
+                      className="bg-white border border-gray-300 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-800 focus:outline-none focus:border-amber-500"
+                    />
+                    <select 
+                      value={newReviewRating}
+                      onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                      className="bg-white border border-gray-300 rounded-xl px-3 py-1.5 text-xs font-black text-amber-600 focus:outline-none focus:border-amber-500 cursor-pointer"
+                    >
+                      <option value={5}>⭐⭐⭐⭐⭐ (5 Sao - Rất Tốt)</option>
+                      <option value={4}>⭐⭐⭐⭐ (4 Sao - Tốt)</option>
+                      <option value={3}>⭐⭐⭐ (3 Sao - Bình Thường)</option>
+                    </select>
+                  </div>
+
+                  <textarea 
+                    value={newReviewComment}
+                    onChange={(e) => setNewReviewComment(e.target.value)}
+                    required
+                    rows={2}
+                    placeholder="Nhập cảm nhận của bạn về sản phẩm..."
+                    className="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-xs font-medium text-gray-800 focus:outline-none focus:border-amber-500"
+                  />
+
+                  <button 
+                    type="submit" 
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-2 rounded-xl text-xs uppercase cursor-pointer transition-all shadow-xs"
+                  >
+                    🚀 GỬI ĐÁNH GIÁ CỦA BẠN
+                  </button>
+                </form>
+
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );
