@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { getSystemThemeConfig } from '../lib/themeEngine';
 
 export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTopUp, onOpenOrders, onOpenTaxiModal, onOpenJobsModal }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeThemeConfig, setActiveThemeConfig] = useState(getSystemThemeConfig());
+
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      if (e.detail) setActiveThemeConfig(e.detail);
+    };
+
+    window.addEventListener('system_theme_changed', handleThemeChange);
+    return () => window.removeEventListener('system_theme_changed', handleThemeChange);
+  }, []);
 
   const mainSlides = [
     {
       id: 1,
-      badge: 'FREESHIP EXTRA',
-      title: 'GIAN HÀNG CHÍNH HÃNG 100%',
+      badge: activeThemeConfig.eventTag || 'FREESHIP EXTRA',
+      title: activeThemeConfig.bannerTitle || 'GIAN HÀNG CHÍNH HÃNG 100%',
       subTitle: 'Trải nghiệm mua sắm, thuê đồ & dịch vụ chất lượng cao với ưu đãi độc quyền TQ Store',
       btnText: 'MUA SẮM NGAY',
       img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=80',
-      bgGradient: 'from-navy via-indigo-950 to-slate-900'
+      bgGradient: activeThemeConfig.bgGradient || 'from-navy via-indigo-950 to-slate-900'
     },
     {
       id: 2,

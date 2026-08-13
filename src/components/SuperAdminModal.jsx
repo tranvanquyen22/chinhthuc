@@ -4789,14 +4789,20 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                   </span>
                 </div>
 
-                {/* DANH SÁCH 5 BỘ THEMES ĐẮC SẮC */}
-                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <h4 className="font-extrabold text-navy text-xs uppercase tracking-wider">
-                      🌈 Chọn Bộ Giao Diện Muốn Áp Dụng Cho Toàn Bộ Hệ Thống
-                    </h4>
-                    <span className="text-gray-500 font-mono text-[11px]">
-                      Theme đang chạy: <strong className="text-purple-700 font-black">{currentActiveTheme.name || '🌙 Đêm Sang Trọng'}</strong>
+                {/* DANH SÁCH BỘ GIAO DIỆN THEO SỰ KIỆN & LỄ HỘI */}
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-2">
+                    <div>
+                      <h4 className="font-black text-navy text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <i className="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+                        <span>🎉 CHỌN GIAO DIỆN THEO SỰ KIỆN & LỄ HỘI (ÁP DỤNG REALTIME TỨC THÌ)</span>
+                      </h4>
+                      <p className="text-[11px] text-gray-500 font-medium">
+                        Kích hoạt giao diện sự kiện (Tết Nguyên Đán, Giáng Sinh, Quốc Khánh 2/9, Black Friday...) toàn bộ người dùng chuyển giao diện ngay lập tức!
+                      </p>
+                    </div>
+                    <span className="text-gray-600 font-mono text-[11px] bg-purple-50 border border-purple-200 px-3 py-1 rounded-full shrink-0">
+                      Đang chạy: <strong className="text-purple-700 font-black">{currentActiveTheme.name || '🔴 Đỏ Tươi Shopee'}</strong>
                     </span>
                   </div>
 
@@ -4812,17 +4818,21 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                           }`}
                         >
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <h5 className="font-black text-navy text-xs">{t.name}</h5>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-900 text-amber-300">
+                                {t.eventTag || '🎉 SỰ KIỆN'}
+                              </span>
                               {isCurrent && (
                                 <span className="bg-amber-400 text-navy font-black text-[9px] px-2 py-0.5 rounded-full uppercase">
-                                  ĐANG DÙNG
+                                  ✓ ĐANG CHẠY
                                 </span>
                               )}
                             </div>
 
-                            <div className={`h-16 rounded-xl p-2.5 flex items-center justify-center text-white font-bold text-[11px] shadow-inner ${t.bgGradient}`}>
-                              {t.name}
+                            <h5 className="font-black text-navy text-xs leading-snug">{t.name}</h5>
+
+                            <div className={`h-16 rounded-xl p-2.5 flex items-center justify-center text-white font-bold text-[10px] text-center shadow-inner ${t.bgGradient}`}>
+                              <span className="drop-shadow-sm line-clamp-2">{t.bannerTitle || t.name}</span>
                             </div>
 
                             <div className="flex items-center justify-between text-[10px] text-gray-500 font-mono pt-1">
