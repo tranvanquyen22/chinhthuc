@@ -1,11 +1,48 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh; /* Sử dụng Dynamic Viewport Height cho iOS Safari & Mobile Chrome */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
     background-color: #f8f9fa;
     font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
     color: #1f2937;
+    
+    /* 1. TẮT TÍNH NĂNG BÔI ĐEN CHỌN VĂN BẢN TOÀN TRANG (USER-SELECT: NONE) */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* 2. XÓA MẢNG MÀU XÁM HIGHLIGHT MẶC ĐỊNH KHI NHẤP TOUCH TRÊN TRÌNH DUYỆT DI ĐỘNG */
+    -webkit-tap-highlight-color: transparent;
+
+    /* 3. KHÓA HIỆU ỨNG KÉO NẢY PULL-TO-REFRESH & RUBBER-BAND BASS CỦA TRÌNH DUYỆT */
+    overscroll-behavior-y: contain;
+
+    /* 4. HỖ TRỢ CUỘN TRÂN TRU CHUẨN IOS NATIVE */
+    -webkit-overflow-scrolling: touch;
   }
+
+  /* CHO PHÉP BÔI ĐEN VĂN BẢN TRONG CÁC Ô NHẬP LIỆU INPUT, TEXTAREA */
+  input, textarea, select, [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+  }
+}
+
+/* KHOẢNG ĐỆM AN TOÀN CHO IPHONE CÓ NOTCH VÀ HOME INDICATOR BAR (SAFE AREA INSETS) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bg-navy {

@@ -2,9 +2,25 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- 1. THẺ META KHÓA ZOOM (VIEWPORT LOCK) & TỰ ĐỘNG CO GIÃN CHUẨN NATIVE MOBILE APP -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- 2. THẺ META HỖ TRỢ HIỂN THỊ NATIVE PWA CHO IOS (SAFARI) VÀ ANDROID CHROME -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TQ Store" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0F2C59" />
+
     <title>TQ Store - Super Admin Overlord & Realtime Multi-Model Platform</title>
     <meta name="description" content="TQ Store - Hệ thống mua sắm đa mô hình, quản trị Super Admin Overlord, phân tích tài chính P&L, Ví số dư TQ Pay, tích điểm TQ Xu & Hộp thư trao đổi thời gian thực Supabase." />
+    
+    <!-- PWA MANIFEST & ICONS -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <!-- Google Fonts: Montserrat -->
@@ -15,4 +31,3 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-

@@ -1,0 +1,19 @@
+{
+  "short_name": "TQ Store",
+  "name": "TQ Store - Thương Mại Điện Tử & Đặt Xe Công Nghệ",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0F2C59",
+  "theme_color": "#0F2C59",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "description": "TQ Store - Hệ thống mua sắm thương mại điện tử chính hãng, thuê trang phục cưới, F&B, Spa và dịch vụ đặt xe công nghệ hoả tốc 24/7."
+}
