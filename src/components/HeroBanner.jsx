@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTopUp, onOpenOrders }) {
+export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTopUp, onOpenOrders, onOpenTaxiModal }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const mainSlides = [
@@ -91,6 +91,13 @@ export default function HeroBanner({ activeCategory, setActiveCategory, onOpenTo
       icon: 'fa-solid fa-ticket',
       bg: 'bg-gradient-to-br from-purple-600 to-indigo-600',
       action: () => alert('🎟️ Bạn có 2 mã giảm giá khả dụng: TQ10 (Giảm 10%) và TQ50K (Giảm 50.000đ)!')
+    },
+    {
+      id: 'TAXI',
+      title: '🚖 Taxi TQ Đặt Xe',
+      icon: 'fa-solid fa-taxi',
+      bg: 'bg-gradient-to-br from-amber-500 to-yellow-600',
+      action: onOpenTaxiModal
     },
     {
       id: 'WALLET',
