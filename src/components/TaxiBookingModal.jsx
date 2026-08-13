@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getUserLocation } from '../lib/userLocation';
 
 const TAXI_SERVICE_OPTIONS = [
   {
@@ -66,6 +67,37 @@ export default function TaxiBookingModal({ isOpen, onClose }) {
   const [note, setNote] = useState('');
   const [isBookingSuccess, setIsBookingSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isAutoGpsFilled, setIsAutoGpsFilled] = useState(false);
+
+  // 1. TỰ ĐỘNG ĐỊNH VỊ ĐIỂM ĐÓN GPS THỜI GIAN THỰC (0 THAO TÁC CẦN LÀM)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const userLoc = getUserLocation();
+    if (userLoc && userLoc.address) {
+      setPickupAddress(userLoc.address);
+      if (userLoc.lat && userLoc.lng) {
+        setCoords({ lat: userLoc.lat, lng: userLoc.lng });
+      }
+      setIsAutoGpsFilled(true);
+      setShowMapPreview(true);
+    }
+
+    // Lắng nghe di chuyển vị trí Live GPS khi mở cửa sổ đặt xe
+    const handleLocationUpdate = (e) => {
+      if (e.detail && e.detail.address) {
+        setPickupAddress(e.detail.address);
+        if (e.detail.lat && e.detail.lng) {
+          setCoords({ lat: e.detail.lat, lng: e.detail.lng });
+        }
+        setIsAutoGpsFilled(true);
+        setShowMapPreview(true);
+      }
+    };
+
+    window.addEventListener('user_location_updated', handleLocationUpdate);
+    return () => window.removeEventListener('user_location_updated', handleLocationUpdate);
+  }, [isOpen]);
 
   // Hàm định vị vị trí đón trực tiếp qua GPS & Google Maps
   const handleLocateCurrentGps = () => {
@@ -241,6 +273,13 @@ export default function TaxiBookingModal({ isOpen, onClose }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
+                  {isAutoGpsFilled && (
+                    <div className="text-[9px] bg-emerald-100/90 text-emerald-900 font-black px-2.5 py-1 rounded-xl border border-emerald-300 mb-1.5 flex items-center gap-1.5 animate-in fade-in duration-200">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping shrink-0"></span>
+                      <span>✨ ĐÃ TỰ ĐỘNG ĐỊNH VỊ ĐIỂM ĐÓN GPS BẢN THÂN (0 THAO TÁC)</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between mb-1">
                     <label className="block font-bold text-gray-700">
                       🟢 Điểm Đón Tận Nơi:
