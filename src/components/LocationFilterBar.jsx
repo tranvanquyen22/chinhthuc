@@ -1,11 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getUserLocation } from '../lib/userLocation';
 
 export default function LocationFilterBar({
   selectedCity,
   setSelectedCity,
   selectedDistrict,
-  setSelectedDistrict
+  setSelectedDistrict,
+  onOpenLocationModal
 }) {
+  const [userLoc, setUserLoc] = useState(getUserLocation());
+
+  useEffect(() => {
+    const handleLocationUpdate = (e) => {
+      if (e.detail) setUserLoc(e.detail);
+    };
+    window.addEventListener('user_location_updated', handleLocationUpdate);
+    return () => window.removeEventListener('user_location_updated', handleLocationUpdate);
+  }, []);
+
   const cities = [
     { id: 'ALL', name: 'Tất Cả Tỉnh Thành Việt Nam' },
     { id: 'TP. HỒ CHÍ MINH', name: 'TP. Hồ Chí Minh' },
@@ -29,7 +41,7 @@ export default function LocationFilterBar({
   return (
     <section className="bg-gradient-to-r from-navy via-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-md border border-amber-400/30 font-sans space-y-3">
       {/* Tiêu đề section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-white/10 pb-2.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-amber-400 text-navy rounded-lg flex items-center justify-center text-xs font-black shadow">
             <i className="fa-solid fa-location-dot"></i>
@@ -44,9 +56,15 @@ export default function LocationFilterBar({
           </div>
         </div>
 
-        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-400/30 self-start sm:self-center">
-          📍 Định vị kho toàn quốc
-        </span>
+        <button 
+          onClick={onOpenLocationModal}
+          className="text-[10px] bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-black px-3 py-1 rounded-full border border-emerald-400/50 self-start sm:self-center cursor-pointer transition-all flex items-center gap-1.5 shadow-sm max-w-xs truncate"
+          title="Chạm để xem và đổi định vị Google Maps GPS cá nhân"
+        >
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping shrink-0"></span>
+          <span className="truncate">{userLoc.address || '📍 Live GPS Google Maps của Tôi'}</span>
+          <i className="fa-solid fa-chevron-right text-[9px] text-amber-300 shrink-0"></i>
+        </button>
       </div>
 
       {/* Thanh chọn Địa điểm (Dropdown Selectors ngang) */}

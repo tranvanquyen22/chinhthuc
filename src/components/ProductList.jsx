@@ -101,7 +101,8 @@ export default function ProductList({
   onClearShopFilter,
   onAddToCart,
   onOpenChat,
-  refreshTrigger
+  refreshTrigger,
+  onOpenLocationModal
 }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -260,6 +261,7 @@ export default function ProductList({
           setSelectedCity={setSelectedCity}
           selectedDistrict={selectedDistrict}
           setSelectedDistrict={setSelectedDistrict}
+          onOpenLocationModal={onOpenLocationModal}
         />
       )}
 

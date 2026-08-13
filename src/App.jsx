@@ -15,6 +15,7 @@ import SuperAdminModal from './components/SuperAdminModal';
 import ShopSettingsModal from './components/ShopSettingsModal';
 import BroadcastAnnouncementModal from './components/BroadcastAnnouncementModal';
 import TaxiBookingModal from './components/TaxiBookingModal';
+import UserLocationModal from './components/UserLocationModal';
 import MaintenanceOverlay from './components/MaintenanceOverlay';
 import Footer from './components/Footer';
 import { fetchCloudSystemThemeConfig, subscribeSystemThemeRealtime, getSystemThemeConfig } from './lib/themeEngine';
@@ -72,6 +73,7 @@ function AppContent() {
   const [isShopSettingsOpen, setIsShopSettingsOpen] = useState(false);
   const [isAnnouncementsOpen, setIsAnnouncementsOpen] = useState(false);
   const [isTaxiModalOpen, setIsTaxiModalOpen] = useState(false);
+  const [isUserLocationOpen, setIsUserLocationOpen] = useState(false);
   const [attachedChatProduct, setAttachedChatProduct] = useState(null);
   const [refreshProductsTrigger, setRefreshProductsTrigger] = useState(0);
 
@@ -227,6 +229,7 @@ function AppContent() {
               onAddToCart={handleAddToCart}
               onOpenChat={handleOpenChatWithProduct}
               refreshTrigger={refreshProductsTrigger}
+              onOpenLocationModal={() => setIsUserLocationOpen(true)}
             />
           </>
         )}
@@ -308,6 +311,12 @@ function AppContent() {
       <TaxiBookingModal 
         isOpen={isTaxiModalOpen}
         onClose={() => setIsTaxiModalOpen(false)}
+      />
+
+      {/* User Live GPS Location Management Modal */}
+      <UserLocationModal 
+        isOpen={isUserLocationOpen}
+        onClose={() => setIsUserLocationOpen(false)}
       />
 
       {/* Footer */}
