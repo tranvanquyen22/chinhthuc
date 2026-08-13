@@ -21,10 +21,9 @@ export default function Header({
   onOpenCoinsModal,
   onOpenAnnouncements
 }) {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile } = useAuth();
   const [announcements, setAnnouncements] = useState(getSystemAnnouncements());
   const [readIds, setReadIds] = useState(getReadAnnouncementIds());
-  const [lang, setLang] = useState('VIE');
 
   useEffect(() => {
     fetchCloudAnnouncements().then(data => {
@@ -53,202 +52,149 @@ export default function Header({
   const unreadCount = announcements.filter(a => !readIds.includes(a.id)).length;
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-100 font-sans">
-      {/* Top Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
+    <header className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-md sticky top-0 z-40 font-sans border-b border-red-800">
+      
+      {/* 1. THANH HEADER CHÍNH CỐ ĐỊNH Ở TRÊN CÙNG (FRESH RED HEADER BACKGROUND) */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-2.5 sm:gap-4">
         
-        {/* ================= GÓC TRÁI: LOGO & SLOGAN ================= */}
+        {/* LOGO THƯƠNG HIỆU */}
         <div 
-          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+          className="flex items-center gap-2 cursor-pointer group shrink-0"
           onClick={() => { setActiveTab('home'); setActiveCategory('ALL'); }}
         >
-          <div className="w-10 h-10 bg-navy rounded-xl flex items-center justify-center text-amber-400 font-black text-xl shadow-md group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 bg-white text-red-600 rounded-xl flex items-center justify-center font-black text-lg shadow-md group-hover:scale-105 transition-transform">
             TQ
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <span className="text-2xl font-black tracking-wider text-navy">TQ Store</span>
-              <span className="w-2.5 h-2.5 bg-orange-custom rounded-full group-hover:scale-125 transition-transform"></span>
-            </div>
-            <span className="text-[10px] text-gray-500 font-semibold tracking-tight">
-              Marketplace Multi-Model & Realtime
+          <div className="hidden sm:flex flex-col">
+            <span className="text-lg font-black tracking-wider text-white leading-tight">TQ Store</span>
+            <span className="text-[9px] text-amber-200 font-semibold tracking-tight">
+              Siêu Chợ Việt Nam 24/7
             </span>
           </div>
         </div>
 
-        {/* ================= KHU VỰC GIỮA: DROPDOWN & THANH TÌM KIẾM ================= */}
-        <div className="flex-1 max-w-2xl hidden md:flex items-center bg-gray-100 rounded-full border border-gray-200 focus-within:border-navy focus-within:bg-white focus-within:shadow-md transition-all p-0.5">
-          {/* Dropdown Menu: Tất cả sản phẩm */}
-          <select 
-            value={searchCategory}
-            onChange={(e) => setSearchCategory(e.target.value)}
-            className="bg-transparent px-3.5 py-2 text-xs font-bold text-gray-700 border-r border-gray-300 focus:outline-none cursor-pointer hover:text-navy"
-          >
-            <option value="ALL">Tất cả sản phẩm</option>
-            <option value="RENTAL">👗 Thuê Đồ</option>
-            <option value="RETAIL">🛍️ Bán Đồ</option>
-            <option value="FNB">🧋 Đồ Ăn & Uống</option>
-            <option value="BEAUTY">💄 Làm Đẹp & Spa</option>
-          </select>
-
-          {/* Search Input Bar */}
+        {/* THANH TÌM KIẾM BO GÓC BÊN TRONG CÓ KÍNH LÚP */}
+        <div className="flex-1 max-w-xl flex items-center bg-white rounded-full p-1 shadow-inner focus-within:ring-2 focus-within:ring-amber-300 transition-all">
+          <i className="fa-solid fa-magnifying-glass text-gray-400 text-xs ml-3 mr-2 shrink-0"></i>
+          
           <input 
             type="text" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm trang phục thuê, sản phẩm, đồ ăn..." 
-            className="w-full bg-transparent px-4 py-2 text-xs text-gray-800 focus:outline-none placeholder-gray-400 font-medium"
+            placeholder="Tìm sản phẩm, thời trang, F&B, taxi hoả tốc..." 
+            className="w-full bg-transparent text-xs text-gray-900 focus:outline-none placeholder-gray-400 font-medium py-1"
           />
 
-          {/* Search Button (Biểu tượng Kính Lúp Bo Tròn Xanh Thẫm) */}
-          <button className="bg-navy hover:bg-navy-dark text-amber-300 w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 mr-0.5 shadow-sm">
-            <i className="fa-solid fa-magnifying-glass text-xs"></i>
-          </button>
+          <select 
+            value={searchCategory}
+            onChange={(e) => setSearchCategory(e.target.value)}
+            className="hidden md:block bg-gray-100 text-gray-800 text-[11px] font-bold px-2.5 py-1 rounded-full border-none focus:outline-none cursor-pointer mr-1"
+          >
+            <option value="ALL">Tất cả</option>
+            <option value="RENTAL">👗 Thuê Đồ</option>
+            <option value="RETAIL">🛍️ Bán Đồ</option>
+            <option value="FNB">🧋 F&B</option>
+            <option value="BEAUTY">💄 Spa</option>
+          </select>
         </div>
 
-        {/* ================= GÓC PHẢI: CTA, NÚT TÀI KHOẢN VIÊN THUỐC & ICONS ================= */}
-        <div className="flex items-center gap-3 shrink-0">
-
-          {/* Nút Call to Action (CTA): Việc Làm TQ (Viền Xanh Lá) */}
-          <a
-            href="#jobs"
-            onClick={(e) => { e.preventDefault(); alert("🚀 Phân hệ Việc Làm TQ Store: Tuyển dụng Nhân viên, CTV Shop & Tài xế giao hàng!"); }}
-            className="bg-white hover:bg-emerald-50 text-emerald-700 border-2 border-emerald-600 px-3.5 py-1.5 rounded-full font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+        {/* CỤM ICONS BÊN PHẢI THANH TÌM KIẾM: TIN NHẮN, CHUÔNG THÔNG BÁO, GIỎ HÀNG, NÚT "TÔI" NÂU VÀNG */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          
+          {/* ICON 1: TIN NHẮN (MESSAGE ICON) */}
+          <a 
+            href="#chat"
+            onClick={(e) => { e.preventDefault(); alert("💬 Hộp thư nhắn tin Realtime: Kết nối trực tiếp Chủ Shop & Tài Xế!"); }}
+            className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-red-700/60 hover:bg-red-800 flex items-center justify-center text-white transition-colors cursor-pointer relative"
+            title="Tin nhắn thoại / Chat"
           >
-            <i className="fa-solid fa-briefcase text-emerald-600 text-xs"></i>
-            <span>Việc Làm TQ</span>
+            <i className="fa-solid fa-comment-dots text-sm"></i>
           </a>
 
-          {/* Nút Đăng sản phẩm mới (dành cho Vendor/Shop) */}
-          {user && (userProfile.role === 'SHOP' || userProfile.role === 'SUPER_ADMIN') && (
-            <button 
-              onClick={onOpenAddProduct}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 text-white px-3.5 py-1.5 rounded-full text-xs font-black shadow-md transition-all flex items-center gap-1 cursor-pointer"
-            >
-              <i className="fa-solid fa-plus-circle text-amber-300"></i> ĐĂNG SP
-            </button>
-          )}
+          {/* ICON 2: CHUÔNG THÔNG BÁO (NOTIFICATION BELL WITH RED BADGE COUNTER) */}
+          <button 
+            onClick={onOpenAnnouncements}
+            className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-red-700/60 hover:bg-red-800 flex items-center justify-center text-white transition-colors cursor-pointer relative"
+            title="Thông báo toàn hệ thống từ Admin"
+          >
+            <i className={`fa-solid fa-bell text-sm ${unreadCount > 0 ? 'text-amber-300 animate-bounce' : 'text-white'}`}></i>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-amber-400 text-red-950 font-black text-[9px] min-w-[17px] h-4 rounded-full flex items-center justify-center border-2 border-red-600 px-1 shadow-md animate-pulse font-mono">
+                {unreadCount}
+              </span>
+            )}
+          </button>
 
-          {/* Nút "Tôi" (Hình Người) & Cụm Nút Ví Số Dư - Ví Xu */}
+          {/* ICON 3: GIỎ HÀNG (SHOPPING CART ICON WITH BADGE) */}
+          <button 
+            onClick={onOpenCart}
+            className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-red-700/60 hover:bg-red-800 flex items-center justify-center text-white transition-colors cursor-pointer relative"
+            title="Xem giỏ hàng"
+          >
+            <i className="fa-solid fa-cart-shopping text-sm"></i>
+            <span className="absolute -top-1 -right-1 bg-amber-400 text-red-950 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow font-mono border border-red-600">
+              {cartCount}
+            </span>
+          </button>
+
+          {/* ICON 4: NÚT 'TÔI' BO GÓC MÀU NÂU VÀNG (GOLDEN-BROWN PROFILE BUTTON) */}
           {!user ? (
             <button 
               onClick={() => onOpenAuth('login')}
-              className="bg-navy hover:bg-navy-dark text-white px-4 py-1.5 rounded-full text-xs font-extrabold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer border border-amber-400/50"
-              title="Tôi - Đăng nhập / Đăng ký"
+              className="bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-700 hover:from-amber-700 hover:to-yellow-800 text-white font-extrabold text-xs px-3.5 sm:px-4 py-1.5 rounded-full shadow-md transition-all cursor-pointer flex items-center gap-1.5 border border-amber-300/80"
+              title="Đăng nhập / Đăng ký"
             >
-              <div className="w-5 h-5 bg-amber-400 text-navy rounded-full flex items-center justify-center text-xs font-black">
+              <div className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center text-[10px] font-black">
                 <i className="fa-solid fa-user"></i>
               </div>
               <span>Tôi</span>
             </button>
           ) : (
-            <div className="flex items-center gap-2">
-              {/* Nút 1: Nút Ví Số Dư TQ Pay */}
-              <div 
-                onClick={onOpenTopUp}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform"
-                title="Số dư Ví TQ Pay - Chạm để Nạp / Rút tiền"
-              >
-                <i className="fa-solid fa-wallet text-amber-300 text-xs"></i>
-                <span>Ví: {Number(userProfile.walletBalance || 0).toLocaleString('vi-VN')}đ</span>
+            <button 
+              onClick={onOpenUserDashboard}
+              className="bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-700 hover:from-amber-700 hover:to-yellow-800 text-white font-extrabold text-xs px-3 sm:px-4 py-1.5 rounded-full shadow-md transition-all cursor-pointer flex items-center gap-1.5 border border-amber-300/80 hover:scale-105"
+              title="Trang quản lý cá nhân - Mục Tôi"
+            >
+              <div className="w-4 h-4 rounded-full bg-amber-300 text-amber-950 font-black flex items-center justify-center text-[9px] shrink-0 overflow-hidden border border-white">
+                {userProfile.avatar ? (
+                  <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <i className="fa-solid fa-user"></i>
+                )}
               </div>
-
-              {/* Nút 2: Nút Ví Xu TQ -> Mở Bảng Số Dư Xu TQ */}
-              <div 
-                onClick={onOpenCoinsModal}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform"
-                title="Số dư Xu TQ - Chạm để xem Bảng Số Dư Xu"
-              >
-                <i className="fa-solid fa-coins text-yellow-200 text-xs"></i>
-                <span>Xu: {Number(userProfile.coins || 0).toLocaleString('vi-VN')} Xu</span>
-              </div>
-
-              {/* Nút 3: Nút "Tôi" (Hình người) -> Mở Dashboard Tác Vụ Nhanh */}
-              <button 
-                onClick={onOpenUserDashboard}
-                className="bg-navy hover:bg-navy-dark text-white px-3.5 py-1.5 rounded-full text-xs font-extrabold flex items-center gap-1.5 border border-amber-400/80 shadow transition-all cursor-pointer hover:scale-105"
-                title="Mở Các Nút Tác Vụ Nhanh - Mục Tôi"
-              >
-                <div className="w-5 h-5 rounded-full bg-amber-400 text-navy font-black flex items-center justify-center text-[10px] shrink-0 overflow-hidden border border-white">
-                  {userProfile.avatar ? (
-                    <img src={userProfile.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <i className="fa-solid fa-user"></i>
-                  )}
-                </div>
-                <span className="font-extrabold text-amber-300">Tôi</span>
-              </button>
-            </div>
+              <span className="font-black text-white">Tôi</span>
+            </button>
           )}
-
-          {/* Cụm Icon Tiện Ích: Ngôn Ngữ, Thông Báo (Chuông) & Giỏ Hàng */}
-          <div className="flex items-center gap-2 pl-1 border-l border-gray-200">
-            
-            {/* Icon Ngôn Ngữ / Chung */}
-            <button 
-              onClick={() => setLang(lang === 'VIE' ? 'ENG' : 'VIE')}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer text-xs font-bold"
-              title="Đổi ngôn ngữ"
-            >
-              <i className="fa-solid fa-globe text-sm"></i>
-            </button>
-
-            {/* Icon Thông Báo (Chuông Trên Cùng - Nhận Thông Báo Realtime từ Admin) */}
-            <button 
-              onClick={onOpenAnnouncements}
-              className="relative w-8.5 h-8.5 rounded-full flex items-center justify-center text-gray-700 hover:text-navy hover:bg-gray-100 transition-colors cursor-pointer"
-              title="Thông báo toàn hệ thống từ Admin"
-            >
-              <i className={`fa-solid fa-bell text-base ${unreadCount > 0 ? 'text-red-600 animate-bounce' : 'text-gray-700'}`}></i>
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-600 text-white font-black text-[9px] min-w-[17px] h-4 rounded-full flex items-center justify-center border-2 border-white px-1 shadow-md animate-pulse font-mono">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Icon Giỏ Hàng (Cart) */}
-            <button 
-              onClick={onOpenCart}
-              className="relative w-8 h-8 rounded-full flex items-center justify-center text-navy hover:text-orange-custom hover:bg-orange-50 transition-colors cursor-pointer"
-              title="Xem giỏ hàng"
-            >
-              <i className="fa-solid fa-cart-shopping text-sm"></i>
-              <span className="absolute -top-1 -right-1 bg-orange-custom text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
-                {cartCount}
-              </span>
-            </button>
-
-          </div>
 
         </div>
       </div>
 
-      {/* Navigation Sub-Menu Categories */}
-      <nav className="bg-navy text-white shadow-inner">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-1 overflow-x-auto scrollbar-none text-xs font-semibold py-1">
+      {/* 2. THANH DANH MỤC PHỤ (NỀN ĐỎ - SUB-CATEGORY NAVBAR BELOW HEADER) */}
+      <nav className="bg-red-700 text-white border-t border-red-500/50 shadow-inner">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center space-x-1.5 overflow-x-auto scrollbar-none text-xs font-bold py-1.5">
           <button 
             onClick={() => { setActiveTab('home'); setActiveCategory('ALL'); }}
-            className={`px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
-              activeTab === 'home' && activeCategory === 'ALL' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+            className={`px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+              activeTab === 'home' && activeCategory === 'ALL' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
           >
-            <i className="fa-solid fa-house"></i> Trang chủ
+            <i className="fa-solid fa-house"></i>
+            <span>Trang chủ</span>
           </button>
 
           <button 
             onClick={() => { setActiveTab('home'); setActiveCategory('RENTAL'); }}
-            className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'home' && activeCategory === 'RENTAL' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+            className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              activeTab === 'home' && activeCategory === 'RENTAL' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
           >
-            👗 Cho Thuê Đồ
+            👗 Thuê Đồ Cưới
           </button>
 
           <button 
             onClick={() => { setActiveTab('home'); setActiveCategory('RETAIL'); }}
-            className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'home' && activeCategory === 'RETAIL' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+            className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              activeTab === 'home' && activeCategory === 'RETAIL' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
           >
             🛍️ Shop Bán Đồ
@@ -256,17 +202,17 @@ export default function Header({
 
           <button 
             onClick={() => { setActiveTab('home'); setActiveCategory('FNB'); }}
-            className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'home' && activeCategory === 'FNB' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+            className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              activeTab === 'home' && activeCategory === 'FNB' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
           >
-            🧋 Đồ Ăn & Uống
+            🧋 Đồ Ăn & Trà Sữa
           </button>
 
           <button 
             onClick={() => { setActiveTab('home'); setActiveCategory('BEAUTY'); }}
-            className={`px-3.5 py-2 rounded-lg transition-colors cursor-pointer ${
-              activeTab === 'home' && activeCategory === 'BEAUTY' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+            className={`px-3.5 py-1.5 rounded-full transition-all cursor-pointer shrink-0 ${
+              activeTab === 'home' && activeCategory === 'BEAUTY' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600 text-white'
             }`}
           >
             💄 Làm Đẹp & Spa
@@ -275,15 +221,16 @@ export default function Header({
           {user && (
             <button 
               onClick={onOpenOrders}
-              className={`px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1 text-amber-300 cursor-pointer ${
-                activeTab === 'orders' ? 'bg-orange-custom text-white' : 'hover:bg-navy-light'
+              className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1 text-amber-200 hover:text-white cursor-pointer shrink-0 ${
+                activeTab === 'orders' ? 'bg-amber-400 text-red-950 font-black shadow' : 'hover:bg-red-600'
               }`}
             >
-              📦 Lịch sử đơn & Ví Xu
+              📦 Lịch sử đơn hàng
             </button>
           )}
         </div>
       </nav>
+
     </header>
   );
 }
