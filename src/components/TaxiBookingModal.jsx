@@ -57,12 +57,42 @@ const TAXI_SERVICE_OPTIONS = [
 export default function TaxiBookingModal({ isOpen, onClose }) {
   const { userProfile } = useAuth();
   const [selectedService, setSelectedService] = useState(TAXI_SERVICE_OPTIONS[0]);
+  const [coords, setCoords] = useState(null); // { lat, lng }
+  const [isLocatingGps, setIsLocatingGps] = useState(false);
+  const [showMapPreview, setShowMapPreview] = useState(false);
   const [pickupAddress, setPickupAddress] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
   const [distanceKm, setDistanceKm] = useState(5);
   const [note, setNote] = useState('');
   const [isBookingSuccess, setIsBookingSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Hàm định vị vị trí đón trực tiếp qua GPS & Google Maps
+  const handleLocateCurrentGps = () => {
+    if (!navigator.geolocation) {
+      alert('Trình duyệt của bạn không hỗ trợ định vị GPS trực tiếp.');
+      return;
+    }
+
+    setIsLocatingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCoords({ lat, lng });
+
+        const addressText = `📍 Tọa độ GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)} (Vị trí hiện tại)`;
+        setPickupAddress(addressText);
+        setShowMapPreview(true);
+        setIsLocatingGps(false);
+      },
+      (error) => {
+        setIsLocatingGps(false);
+        alert('Không thể định vị GPS. Vui lòng bật quyền truy cập vị trí trên thiết bị hoặc tự nhập địa chỉ.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   if (!isOpen) return null;
 
@@ -211,15 +241,27 @@ export default function TaxiBookingModal({ isOpen, onClose }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">
-                    🟢 Điểm Đón Tận Nơi:
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-bold text-gray-700">
+                      🟢 Điểm Đón Tận Nơi:
+                    </label>
+                    <button 
+                      type="button"
+                      onClick={handleLocateCurrentGps}
+                      disabled={isLocatingGps}
+                      className="text-[10px] font-black text-emerald-700 hover:text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                    >
+                      <i className={`fa-solid ${isLocatingGps ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`}></i>
+                      <span>{isLocatingGps ? 'ĐANG ĐỊNH VỊ...' : '📍 ĐỊNH VỊ GPS'}</span>
+                    </button>
+                  </div>
+
                   <input 
                     type="text" 
                     value={pickupAddress}
                     onChange={(e) => setPickupAddress(e.target.value)}
                     required
-                    placeholder="Ví dụ: 123 Nguyễn Trãi, Quận 1..." 
+                    placeholder="Ví dụ: 123 Nguyễn Trãi, Quận 1 hoặc bấm Định Vị GPS..." 
                     className="w-full bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs text-navy font-bold focus:outline-none focus:border-amber-500"
                   />
                 </div>
@@ -238,6 +280,39 @@ export default function TaxiBookingModal({ isOpen, onClose }) {
                   />
                 </div>
               </div>
+
+              {/* BẢN ĐỒ ĐỊNH VỊ GOOGLE MAPS TRỰC TIẾP */}
+              {pickupAddress && (
+                <div className="bg-white p-3 rounded-2xl border border-gray-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-navy text-[11px] flex items-center gap-1">
+                      <i className="fa-solid fa-map-location-dot text-red-600"></i>
+                      <span>Bản Đồ Định Vị Google Maps Điểm Đón:</span>
+                    </span>
+
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coords ? `${coords.lat},${coords.lng}` : pickupAddress)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-navy text-amber-300 hover:bg-navy-dark font-extrabold text-[10px] px-2.5 py-1 rounded-full flex items-center gap-1 transition-all"
+                    >
+                      <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                      <span>MỞ BẢN ĐỒ LỚN</span>
+                    </a>
+                  </div>
+
+                  <div className="w-full h-40 rounded-xl overflow-hidden border border-gray-300 shadow-inner bg-gray-100">
+                    <iframe 
+                      title="Google Maps Pickup Location Pin"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      src={`https://maps.google.com/maps?q=${coords ? `${coords.lat},${coords.lng}` : encodeURIComponent(pickupAddress)}&z=15&output=embed`}
+                    ></iframe>
+                  </div>
+                </div>
+              )}
 
               {/* Slider khoảng cách Km */}
               <div className="space-y-1 pt-1">
