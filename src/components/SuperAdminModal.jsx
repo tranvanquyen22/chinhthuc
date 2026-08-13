@@ -3143,24 +3143,31 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
               </div>
             )}
 
-            {/* TÍNH NĂNG CHUYÊN BIỆT: PHÊ DUYỆT RÚT TIỀN CHO TÀI KHOẢN */}
+            {/* TÍNH NĂNG CHUYÊN BIỆT: PHÊ DUYỆT RÚT TIỀN & GIẢI NGÂN CHO TÀI KHOẢN */}
             {activeAdminTab === 'withdrawal_approvals' && (
-              <div className="space-y-5 text-xs font-sans">
+              <div className="space-y-6 text-xs font-sans">
                 
                 {/* 1. KHU VỰC LỆNH RÚT TIỀN CHỜ PHÊ DUYỆT (PENDING WITHDRAWALS) */}
-                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-                      <h4 className="font-extrabold text-navy text-sm uppercase tracking-wider">
-                        💸 Yêu Cầu Rút Tiền Chờ Duyệt ({withdrawalRequests.filter(w => w.status === 'PENDING').length})
-                      </h4>
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 bg-emerald-500/20 text-emerald-600 rounded-xl flex items-center justify-center text-sm font-black">
+                        <i className="fa-solid fa-money-bill-transfer"></i>
+                      </div>
+                      <div>
+                        <h4 className="font-black text-navy text-sm uppercase tracking-wider">
+                          💸 YÊU CẦU RÚT TIỀN CHỜ PHÊ DUYỆT ({withdrawalRequests.filter(w => w.status === 'PENDING').length})
+                        </h4>
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          Kiểm tra thông tin tài khoản ngân hàng và chuyển khoản giải ngân cho khách hàng / chủ shop
+                        </p>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={handleExportWithdrawalsCSV}
-                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 border border-emerald-400"
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black px-3.5 py-1.5 rounded-xl text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 border border-emerald-400"
                       >
                         <i className="fa-solid fa-file-csv text-amber-300"></i>
                         <span>Xuất CSV</span>
@@ -3168,7 +3175,7 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
 
                       <button 
                         onClick={loadAdminData}
-                        className="bg-navy text-amber-300 hover:bg-navy-dark px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        className="bg-navy text-amber-300 hover:bg-navy-dark px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs border border-navy/20"
                       >
                         <i className={`fa-solid fa-rotate ${loading ? 'animate-spin' : ''} text-xs`}></i>
                         <span>Làm mới</span>
@@ -3177,55 +3184,79 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                   </div>
 
                   {withdrawalRequests.filter(w => w.status === 'PENDING').length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {withdrawalRequests.filter(w => w.status === 'PENDING').map((wdr) => (
-                        <div key={wdr.id} className="bg-emerald-50/60 border-2 border-emerald-300 p-4 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-2xs">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h5 className="font-black text-navy text-base">{wdr.name || wdr.email.split('@')[0]}</h5>
-                              {getRoleBadge(wdr.role)}
-                              <span className="bg-amber-100 text-amber-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full border border-amber-300">
-                                ⌛ PENDING
+                        <div key={wdr.id} className="bg-slate-50/80 border-2 border-emerald-300/80 hover:border-emerald-500 p-4 sm:p-5 rounded-2xl transition-all shadow-xs space-y-3">
+                          
+                          {/* Top Row: User Meta & Amount */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200/80 pb-3">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="w-8 h-8 bg-emerald-600 text-white font-black rounded-xl flex items-center justify-center text-xs shadow-xs">
+                                💸
+                              </span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h5 className="font-black text-navy text-sm">{wdr.name || wdr.email.split('@')[0]}</h5>
+                                  {getRoleBadge(wdr.role)}
+                                  <span className="bg-amber-100 text-amber-900 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-amber-300">
+                                    ⌛ CHỜ GIẢI NGÂN
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-gray-500 font-mono">
+                                  Email: <strong className="text-navy font-bold">{wdr.email}</strong>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="text-right bg-emerald-100/80 border border-emerald-300 px-4 py-2 rounded-2xl">
+                              <span className="text-[9px] text-emerald-800 font-black uppercase tracking-wider block">SỐ TIỀN XIN RÚT:</span>
+                              <span className="font-black text-xl text-emerald-800 font-mono">
+                                {Number(wdr.amount).toLocaleString('vi-VN')} VNĐ
                               </span>
                             </div>
-                            <p className="text-xs text-gray-700 font-medium">
-                              Tài khoản Email: <strong className="font-mono text-navy">{wdr.email}</strong>
-                            </p>
-                            <div className="bg-white border border-emerald-200 p-2.5 rounded-xl text-xs space-y-0.5">
-                              <span className="font-bold text-gray-700 block">🏦 Ngân hàng nhận: <strong className="text-navy">{wdr.bankName}</strong></span>
-                              <span className="font-mono text-gray-600 block">💳 Số TK: <strong className="text-navy font-bold">{wdr.accountNumber}</strong> | Chủ TK: <strong className="text-navy font-bold uppercase">{wdr.accountHolder}</strong></span>
-                            </div>
-                            <span className="text-[11px] text-gray-400 font-mono mt-1 block">
-                              Mã lệnh: {wdr.id} | Thời gian gửi: {new Date(wdr.requested_at).toLocaleString('vi-VN')}
-                            </span>
                           </div>
 
-                          <div className="flex flex-col sm:flex-row items-end lg:items-center gap-3 shrink-0">
-                            <div className="text-right">
-                              <span className="text-[10px] text-gray-500 font-bold uppercase block">Số tiền rút</span>
-                              <span className="font-black text-xl text-emerald-700 font-mono">
-                                {Number(wdr.amount).toLocaleString('vi-VN')} đ
-                              </span>
+                          {/* Middle Row: Bank Account Details Card */}
+                          <div className="bg-white border border-emerald-200 p-3.5 rounded-xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs shadow-inner">
+                            <div>
+                              <span className="text-[10px] text-gray-400 font-bold block uppercase">🏦 Ngân hàng nhận:</span>
+                              <strong className="text-navy font-black text-sm">{wdr.bankName}</strong>
                             </div>
+                            <div>
+                              <span className="text-[10px] text-gray-400 font-bold block uppercase">💳 Số Tài Khoản STK:</span>
+                              <strong className="text-navy font-mono font-black text-sm">{wdr.accountNumber}</strong>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-gray-400 font-bold block uppercase">👤 Chủ Tài Khoản:</span>
+                              <strong className="text-navy font-black text-xs uppercase">{wdr.accountHolder}</strong>
+                            </div>
+                          </div>
 
-                            <div className="flex items-center gap-2">
+                          {/* Bottom Row: Footer Timestamp & Action Buttons */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                            <span className="text-[10px] text-gray-400 font-mono">
+                              Mã lệnh: #{wdr.id} | Thời gian tạo: {new Date(wdr.requested_at).toLocaleString('vi-VN')}
+                            </span>
+
+                            <div className="flex items-center gap-2.5">
                               <button 
                                 onClick={() => handleApproveWithdrawal(wdr.id, wdr.email, wdr.amount, `${wdr.bankName} - ${wdr.accountNumber}`)}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all shadow-md flex items-center gap-1.5 border border-emerald-400"
+                                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs px-5 py-2.5 rounded-xl cursor-pointer transition-all shadow-md flex items-center gap-1.5 border border-emerald-400"
                               >
-                                <i className="fa-solid fa-check text-xs"></i>
-                                <span>✅ PHÊ DUYỆT & GIẢI NGÂN</span>
+                                <i className="fa-solid fa-circle-check text-sm"></i>
+                                <span>✅ DUYỆT & CHUYỂN KHOẢN GIẢI NGÂN ({Number(wdr.amount).toLocaleString('vi-VN')}đ)</span>
                               </button>
 
                               <button 
                                 onClick={() => handleRejectWithdrawal(wdr.id, wdr.email, wdr.amount)}
-                                className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-300 font-extrabold text-xs px-3.5 py-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-1.5"
+                                className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-300 font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-1.5"
                               >
-                                <i className="fa-solid fa-xmark text-xs"></i>
+                                <i className="fa-solid fa-circle-xmark text-sm"></i>
                                 <span>❌ TỪ CHỐI</span>
                               </button>
                             </div>
                           </div>
+
                         </div>
                       ))}
                     </div>
@@ -3239,39 +3270,40 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                 </div>
 
                 {/* 2. LỊCH SỬ GIẢI NGÂN ĐÃ XỬ LÝ (APPROVED / REJECTED WITHDRAWAL HISTORY) */}
-                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-3 shadow-2xs">
-                  <h4 className="font-extrabold text-navy text-xs uppercase tracking-wider border-b border-gray-100 pb-2">
-                    📜 Lịch Sử Giải Ngân Đã Xử Lý ({withdrawalRequests.filter(w => w.status !== 'PENDING').length})
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-3 shadow-sm">
+                  <h4 className="font-black text-navy text-xs uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                    <i className="fa-solid fa-clock-rotate-left text-emerald-600"></i>
+                    <span>📜 Lịch Sử Giải Ngân Đã Xử Lý ({withdrawalRequests.filter(w => w.status !== 'PENDING').length})</span>
                   </h4>
 
                   {withdrawalRequests.filter(w => w.status !== 'PENDING').length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                       {withdrawalRequests.filter(w => w.status !== 'PENDING').map((wdr) => (
-                        <div key={wdr.id} className="bg-gray-50 border border-gray-200 p-3 rounded-2xl flex items-center justify-between text-xs">
-                          <div>
+                        <div key={wdr.id} className="bg-slate-50 border border-gray-200 p-3.5 rounded-2xl flex items-center justify-between text-xs hover:bg-white transition-all">
+                          <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-navy">{wdr.name || wdr.email}</span>
+                              <span className="font-black text-navy text-xs">{wdr.name || wdr.email}</span>
                               {getRoleBadge(wdr.role)}
                               {wdr.status === 'APPROVED' ? (
-                                <span className="bg-emerald-100 text-emerald-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-emerald-300">
+                                <span className="bg-emerald-100 text-emerald-800 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-emerald-300">
                                   🟢 ĐÃ GIẢI NGÂN
                                 </span>
                               ) : (
-                                <span className="bg-red-100 text-red-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-red-300">
+                                <span className="bg-red-100 text-red-800 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-red-300">
                                   🔴 ĐÃ TỪ CHỐI
                                 </span>
                               )}
                             </div>
-                            <p className="text-[11px] text-gray-500 font-mono mt-0.5">
-                              Ngân hàng: {wdr.bankName} - {wdr.accountNumber} ({wdr.accountHolder})
+                            <p className="text-[11px] text-gray-600 font-mono">
+                              Ngân hàng: <strong>{wdr.bankName}</strong> | STK: <strong className="font-bold text-navy">{wdr.accountNumber}</strong> ({wdr.accountHolder})
                             </p>
                           </div>
 
                           <div className="text-right">
-                            <span className="font-black text-navy font-mono text-sm">
-                              {Number(wdr.amount).toLocaleString('vi-VN')} đ
+                            <span className="font-black text-emerald-700 font-mono text-sm block">
+                              -{Number(wdr.amount).toLocaleString('vi-VN')} đ
                             </span>
-                            <span className="text-[10px] text-gray-400 block font-mono">
+                            <span className="text-[10px] text-gray-400 font-mono">
                               {new Date(wdr.approved_at || wdr.rejected_at || wdr.requested_at).toLocaleString('vi-VN')}
                             </span>
                           </div>
@@ -3290,22 +3322,29 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
 
             {/* TÍNH NĂNG CHUYÊN BIỆT: PHÊ DUYỆT NẠP TIỀN & CỘNG VÍ CHO TÀI KHOẢN */}
             {activeAdminTab === 'deposit_approvals' && (
-              <div className="space-y-5 text-xs font-sans">
+              <div className="space-y-6 text-xs font-sans">
                 
                 {/* 1. KHU VỰC LỆNH NẠP TIỀN CHỜ PHÊ DUYỆT (PENDING DEPOSITS) */}
-                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 bg-cyan-500 rounded-full animate-ping"></span>
-                      <h4 className="font-extrabold text-navy text-sm uppercase tracking-wider">
-                        📥 Yêu Cầu Nạp Tiền Chờ Duyệt ({depositRequests.filter(d => d.status === 'PENDING').length})
-                      </h4>
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 bg-cyan-500/20 text-cyan-600 rounded-xl flex items-center justify-center text-sm font-black">
+                        <i className="fa-solid fa-wallet"></i>
+                      </div>
+                      <div>
+                        <h4 className="font-black text-navy text-sm uppercase tracking-wider">
+                          📥 YÊU CẦU NẠP TIỀN CHỜ PHÊ DUYỆT ({depositRequests.filter(d => d.status === 'PENDING').length})
+                        </h4>
+                        <p className="text-[11px] text-gray-500 font-medium">
+                          Duyệt giao dịch nạp tiền để tự động cộng số dư vào Ví TQ Pay cho tài khoản người dùng
+                        </p>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={handleExportDepositsCSV}
-                        className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 border border-cyan-400"
+                        className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 text-white font-black px-3.5 py-1.5 rounded-xl text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 border border-cyan-400"
                       >
                         <i className="fa-solid fa-file-csv text-amber-300"></i>
                         <span>Xuất CSV</span>
@@ -3313,7 +3352,7 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
 
                       <button 
                         onClick={loadAdminData}
-                        className="bg-navy text-amber-300 hover:bg-navy-dark px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        className="bg-navy text-amber-300 hover:bg-navy-dark px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs border border-navy/20"
                       >
                         <i className={`fa-solid fa-rotate ${loading ? 'animate-spin' : ''} text-xs`}></i>
                         <span>Làm mới</span>
@@ -3322,55 +3361,75 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                   </div>
 
                   {depositRequests.filter(d => d.status === 'PENDING').length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {depositRequests.filter(d => d.status === 'PENDING').map((dep) => (
-                        <div key={dep.id} className="bg-cyan-50/60 border-2 border-cyan-300 p-4 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-2xs">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h5 className="font-black text-navy text-base">{dep.name || dep.email.split('@')[0]}</h5>
-                              {getRoleBadge(dep.role)}
-                              <span className="bg-amber-100 text-amber-900 font-extrabold text-[10px] px-2.5 py-0.5 rounded-full border border-amber-300">
-                                ⌛ CHỜ PHÊ DUYỆT
+                        <div key={dep.id} className="bg-slate-50/80 border-2 border-cyan-300/80 hover:border-cyan-500 p-4 sm:p-5 rounded-2xl transition-all shadow-xs space-y-3">
+                          
+                          {/* Top Row: User Meta & Amount */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200/80 pb-3">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="w-8 h-8 bg-cyan-600 text-white font-black rounded-xl flex items-center justify-center text-xs shadow-xs">
+                                📥
+                              </span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h5 className="font-black text-navy text-sm">{dep.name || dep.email.split('@')[0]}</h5>
+                                  {getRoleBadge(dep.role)}
+                                  <span className="bg-amber-100 text-amber-900 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-amber-300">
+                                    ⌛ CHỜ DUYỆT NẠP
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-gray-500 font-mono">
+                                  Email: <strong className="text-navy font-bold">{dep.email}</strong>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="text-right bg-cyan-100/80 border border-cyan-300 px-4 py-2 rounded-2xl">
+                              <span className="text-[9px] text-cyan-800 font-black uppercase tracking-wider block">SỐ TIỀN NẠP VÍ:</span>
+                              <span className="font-black text-xl text-cyan-800 font-mono">
+                                +{Number(dep.amount).toLocaleString('vi-VN')} VNĐ
                               </span>
                             </div>
-                            <p className="text-xs text-gray-700 font-medium">
-                              Tài khoản Email: <strong className="font-mono text-navy">{dep.email}</strong>
-                            </p>
-                            <div className="bg-white border border-cyan-200 p-2.5 rounded-xl text-xs space-y-0.5">
-                              <span className="font-bold text-gray-700 block">💳 Phương thức: <strong className="text-navy">{dep.paymentMethod}</strong></span>
-                              <span className="font-mono text-gray-600 block">🧾 Mã Giao Dịch / Nội Dung CK: <strong className="text-navy font-bold">{dep.transactionCode}</strong></span>
-                            </div>
-                            <span className="text-[11px] text-gray-400 font-mono mt-1 block">
-                              Mã lệnh: {dep.id} | Thời gian gửi: {new Date(dep.requested_at).toLocaleString('vi-VN')}
-                            </span>
                           </div>
 
-                          <div className="flex flex-col sm:flex-row items-end lg:items-center gap-3 shrink-0">
-                            <div className="text-right">
-                              <span className="text-[10px] text-gray-500 font-bold uppercase block">Số tiền nạp</span>
-                              <span className="font-black text-xl text-cyan-700 font-mono">
-                                +{Number(dep.amount).toLocaleString('vi-VN')} đ
-                              </span>
+                          {/* Middle Row: Payment Method Details Card */}
+                          <div className="bg-white border border-cyan-200 p-3.5 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs shadow-inner">
+                            <div>
+                              <span className="text-[10px] text-gray-400 font-bold block uppercase">💳 Phương thức thanh toán:</span>
+                              <strong className="text-navy font-black text-xs">{dep.paymentMethod}</strong>
                             </div>
+                            <div>
+                              <span className="text-[10px] text-gray-400 font-bold block uppercase">🧾 Nội Dung CK / Mã Giao Dịch:</span>
+                              <strong className="text-cyan-800 font-mono font-black text-xs bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200 inline-block">{dep.transactionCode}</strong>
+                            </div>
+                          </div>
 
-                            <div className="flex items-center gap-2">
+                          {/* Bottom Row: Footer Timestamp & Action Buttons */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                            <span className="text-[10px] text-gray-400 font-mono">
+                              Mã lệnh: #{dep.id} | Thời gian gửi: {new Date(dep.requested_at).toLocaleString('vi-VN')}
+                            </span>
+
+                            <div className="flex items-center gap-2.5">
                               <button 
                                 onClick={() => handleApproveDeposit(dep.id, dep.email, dep.amount)}
-                                className="bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all shadow-md flex items-center gap-1.5 border border-cyan-400"
+                                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 text-white font-black text-xs px-5 py-2.5 rounded-xl cursor-pointer transition-all shadow-md flex items-center gap-1.5 border border-cyan-400"
                               >
-                                <i className="fa-solid fa-check text-xs"></i>
+                                <i className="fa-solid fa-circle-check text-sm"></i>
                                 <span>✅ DUYỆT & CỘNG VÍ (+{Number(dep.amount).toLocaleString('vi-VN')}đ)</span>
                               </button>
 
                               <button 
                                 onClick={() => handleRejectDeposit(dep.id, dep.email, dep.amount)}
-                                className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-300 font-extrabold text-xs px-3.5 py-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-1.5"
+                                className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-300 font-black text-xs px-4 py-2.5 rounded-xl cursor-pointer transition-all flex items-center gap-1.5"
                               >
-                                <i className="fa-solid fa-xmark text-xs"></i>
+                                <i className="fa-solid fa-circle-xmark text-sm"></i>
                                 <span>❌ TỪ CHỐI</span>
                               </button>
                             </div>
                           </div>
+
                         </div>
                       ))}
                     </div>
@@ -3384,39 +3443,40 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                 </div>
 
                 {/* 2. LỊCH SỬ DUYỆT NẠP TIỀN ĐÃ XỬ LÝ (APPROVED / REJECTED DEPOSIT HISTORY) */}
-                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-3 shadow-2xs">
-                  <h4 className="font-extrabold text-navy text-xs uppercase tracking-wider border-b border-gray-100 pb-2">
-                    📜 Lịch Sử Duyệt Nạp Tiền Đã Xử Lý ({depositRequests.filter(d => d.status !== 'PENDING').length})
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-3 shadow-sm">
+                  <h4 className="font-black text-navy text-xs uppercase tracking-wider border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                    <i className="fa-solid fa-clock-rotate-left text-cyan-600"></i>
+                    <span>📜 Lịch Sử Duyệt Nạp Tiền Đã Xử Lý ({depositRequests.filter(d => d.status !== 'PENDING').length})</span>
                   </h4>
 
                   {depositRequests.filter(d => d.status !== 'PENDING').length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                       {depositRequests.filter(d => d.status !== 'PENDING').map((dep) => (
-                        <div key={dep.id} className="bg-gray-50 border border-gray-200 p-3 rounded-2xl flex items-center justify-between text-xs">
-                          <div>
+                        <div key={dep.id} className="bg-slate-50 border border-gray-200 p-3.5 rounded-2xl flex items-center justify-between text-xs hover:bg-white transition-all">
+                          <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-navy">{dep.name || dep.email}</span>
+                              <span className="font-black text-navy text-xs">{dep.name || dep.email}</span>
                               {getRoleBadge(dep.role)}
                               {dep.status === 'APPROVED' ? (
-                                <span className="bg-emerald-100 text-emerald-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-emerald-300">
+                                <span className="bg-emerald-100 text-emerald-800 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-emerald-300">
                                   🟢 ĐÃ CỘNG VÍ
                                 </span>
                               ) : (
-                                <span className="bg-red-100 text-red-800 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-red-300">
+                                <span className="bg-red-100 text-red-800 font-black text-[9px] px-2.5 py-0.5 rounded-full border border-red-300">
                                   🔴 ĐÃ TỪ CHỐI
                                 </span>
                               )}
                             </div>
-                            <p className="text-[11px] text-gray-500 font-mono mt-0.5">
-                              Hình thức: {dep.paymentMethod} | Mã GD: {dep.transactionCode}
+                            <p className="text-[11px] text-gray-600 font-mono">
+                              Phương thức: {dep.paymentMethod} | Mã GD: <strong className="text-navy">{dep.transactionCode}</strong>
                             </p>
                           </div>
 
                           <div className="text-right">
-                            <span className="font-black text-cyan-700 font-mono text-sm">
+                            <span className="font-black text-cyan-700 font-mono text-sm block">
                               +{Number(dep.amount).toLocaleString('vi-VN')} đ
                             </span>
-                            <span className="text-[10px] text-gray-400 block font-mono">
+                            <span className="text-[10px] text-gray-400 font-mono">
                               {new Date(dep.approved_at || dep.rejected_at || dep.requested_at).toLocaleString('vi-VN')}
                             </span>
                           </div>
