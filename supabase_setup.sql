@@ -113,9 +113,43 @@ CREATE POLICY "Allow public insert to messages" ON public.messages FOR INSERT WI
 CREATE POLICY "Allow public read access to announcements" ON public.system_announcements FOR SELECT USING (true);
 CREATE POLICY "Allow admin insert to announcements" ON public.system_announcements FOR INSERT WITH CHECK (true);
 
+-- =========================================================================
+-- DATABASE FUNCTIONS & TRIGGERS (HÀM & TRIGGER TỰ ĐỘNG CẬP NHẬT DỮ LIỆU)
+-- =========================================================================
+
+-- 1. Trigger Tự động cập nhật mốc thời gian updated_at khi dữ liệu thay đổi
+CREATE OR REPLACE FUNCTION public.update_timestamp_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_tq_platform_config_timestamp ON public.tq_platform_config;
+CREATE TRIGGER update_tq_platform_config_timestamp 
+BEFORE UPDATE ON public.tq_platform_config 
+FOR EACH ROW EXECUTE PROCEDURE public.update_timestamp_column();
+
+-- 2. Trigger Tự động đồng bộ Hồ sơ Người dùng (Profile) khi đăng ký thành công qua Supabase Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user_signup()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.messages (user_id, user_email, user_name, content, sender_role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
+    '🎉 Thành viên mới gia nhập TQ Store!',
+    'customer'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- THÊM DỮ LIỆU SẢN PHẨM MẪU
 INSERT INTO public.products (title, price, shop_type, shop_name, image_url, details, stock, badge) VALUES
 ('Áo Sơ Mi Nam TQ Smart', 259000, 'RETAIL', 'TQ Retail Shop', 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=400&q=80', 'Chất vải cotton cao cấp thoáng mát', 50, '🛍️ Bán 259k'),
 ('Váy Cưới Dạ Hội Đỏ Sang Trọng', 200000, 'RENTAL', 'TQ Rental Studio', 'https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=400&q=80', 'Size S/M/L | Tiền cọc 500.000đ', 10, '👗 Thuê 200k/ngày'),
 ('Trà Sữa Nướng Trân Châu Hoàng Gia', 35000, 'FNB', 'TQ Tea & Coffee', 'https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=400&q=80', 'Chuẩn bị 10 phút | Topping đầy đặn', 100, '🧋 F&B 35k'),
-('Liệu Trình Spa Chăm Sóc Da Mặt', 290000, 'BEAUTY', 'TQ Beauty Spa', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=80', 'Thời lượng 60 phút | Cấp ẩm & Thải độc', 30, '💄 Spa 60 phút');
+('Liệu Trình Spa Chăm Sóc Da 60Phút', 290000, 'BEAUTY', 'TQ Beauty Spa', 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=80', 'Cấp ẩm chuyên sâu & Thải độc da', 30, '💄 Spa 60 phút');
