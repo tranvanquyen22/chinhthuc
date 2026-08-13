@@ -32,6 +32,7 @@ import { getSystemVouchers, fetchCloudVouchers, saveSystemVouchers } from '../li
 import { getSystemBankConfig, fetchCloudSystemBankConfig, saveSystemBankConfig, generateVietQRUrl } from '../lib/systemBankConfig';
 import { generateRandomVietnameseName, getRandomAiReview, saveSyntheticReview, updateProductSalesCountCloud, getStoredProductReviews } from '../lib/productReviews';
 import { SYSTEM_THEME_PRESETS, getSystemThemeConfig, saveSystemThemeConfig } from '../lib/themeEngine';
+import { createSystemAnnouncement } from '../lib/announcements';
 
 export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
   const { userProfile, systemStatus, updateSystemStatus, featureLocks, toggleFeatureLock, impersonateUser } = useAuth();
@@ -39,6 +40,8 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
   const [copiedLinkMap, setCopiedLinkMap] = useState({}); // { [email_or_id]: true }
   const [systemBankForm, setSystemBankForm] = useState(getSystemBankConfig());
   const [currentActiveTheme, setCurrentActiveTheme] = useState(getSystemThemeConfig());
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', type: 'ANNOUNCEMENT' });
+  const [isPublishingBroadcast, setIsPublishingBroadcast] = useState(false);
   const [editSalesModal, setEditSalesModal] = useState(null); // { id, title, salesCount }
   const [addReviewModal, setAddReviewModal] = useState(null); // { id, title, userName, rating, comment }
   const [featuredPromotions, setFeaturedPromotions] = useState(getFeaturedPromotions());
@@ -840,6 +843,40 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
     alert(`🎉 Đã áp dụng giao diện [${updatedTheme.name}] thời gian thực toàn hệ thống! Tất cả người dùng sẽ thấy giao diện đổi ngay lập tức.`);
   };
 
+  // 28. PHÁT THÔNG BÁO TOÀN HỆ THỐNG (SYSTEM-WIDE BROADCAST ANNOUNCEMENT)
+  const handlePublishSystemAnnouncement = async (e) => {
+    e.preventDefault();
+    if (!announcementForm.title.trim() || !announcementForm.content.trim()) {
+      alert('Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo!');
+      return;
+    }
+
+    setIsPublishingBroadcast(true);
+    try {
+      const created = await createSystemAnnouncement({
+        title: announcementForm.title,
+        content: announcementForm.content,
+        type: announcementForm.type,
+        createdBy: userProfile?.name || userProfile?.email || 'Super Admin'
+      });
+
+      recordAuditLog(
+        userProfile.email,
+        userProfile.role,
+        'PHÁT THÔNG BÁO TOÀN HỆ THỐNG',
+        `Super Admin đã phát thông báo [${created.title}] tới toàn bộ người dùng & khách hàng`
+      );
+      setAuditLogsList(getAuditLogs());
+
+      alert('🚀 PHÁT THÔNG BÁO THÀNH CÔNG! Tất cả người dùng (online lẫn truy cập sau) sẽ nhận được thông báo này ngay lập tức.');
+      setAnnouncementForm({ title: '', content: '', type: 'ANNOUNCEMENT' });
+    } catch (err) {
+      alert('Lỗi phát thông báo: ' + err.message);
+    } finally {
+      setIsPublishingBroadcast(false);
+    }
+  };
+
   // Preset Lịch lọc P&L
   const handlePresetChange = (preset) => {
     setPlPreset(preset);
@@ -1352,6 +1389,28 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
 
                 <span className="bg-purple-950 text-amber-300 border border-purple-400 font-black text-[10px] px-2 py-0.5 rounded-full font-mono">
                   THEMES
+                </span>
+              </button>
+
+              {/* Nút 2.16: Phát Thông Báo Toàn Hệ Thống (System-Wide Broadcast Announcements) */}
+              <button 
+                onClick={() => setActiveAdminTab('announcements_manager')}
+                className={`w-full p-2.5 rounded-2xl flex items-center justify-between transition-all cursor-pointer ${
+                  activeAdminTab === 'announcements_manager' 
+                    ? 'bg-amber-400 text-navy shadow-md font-black translate-x-1' 
+                    : 'text-red-300 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <i className="fa-solid fa-bullhorn text-base text-red-400 animate-pulse"></i>
+                  <div className="text-left">
+                    <span className="block text-xs">Phát Thông Báo All Sàn</span>
+                    <span className="text-[9px] font-normal opacity-80">Đẩy thông báo tới tất cả người dùng</span>
+                  </div>
+                </div>
+
+                <span className="bg-red-950 text-amber-300 border border-red-400 font-black text-[10px] px-2 py-0.5 rounded-full font-mono">
+                  BROADCAST
                 </span>
               </button>
 
@@ -4727,6 +4786,104 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
                       );
                     })}
                   </div>
+                </div>
+
+              </div>
+            )}
+
+            {/* TÍNH NĂNG CHUYÊN BIỆT: PHÁT THÔNG BÁO TOÀN HỆ THỐNG (SYSTEM-WIDE BROADCAST ANNOUNCEMENTS) */}
+            {activeAdminTab === 'announcements_manager' && (
+              <div className="space-y-5 font-sans text-xs">
+                
+                {/* BANNER ĐẦU TRANG */}
+                <div className="bg-gradient-to-r from-red-950 via-slate-900 to-rose-950 text-white p-5 rounded-3xl border border-red-400/50 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 bg-red-500/30 text-amber-300 border border-red-400/50 rounded-2xl flex items-center justify-center text-xl font-black shadow-inner">
+                      <i className="fa-solid fa-bullhorn animate-pulse"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-black text-sm text-amber-300 uppercase tracking-wider">
+                        📢 PHÁT THÔNG BÁO TOÀN HỆ THỐNG (SYSTEM-WIDE BROADCAST)
+                      </h4>
+                      <p className="text-[11px] text-rose-200 mt-0.5 font-medium">
+                        Phát thông báo tới tất cả người dùng (online lẫn khách vãng lai hay người dùng truy cập sau này)
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="bg-red-900 text-amber-300 border border-red-400 font-black text-xs px-3 py-1.5 rounded-full shrink-0">
+                    PUSH BROADCAST
+                  </span>
+                </div>
+
+                {/* FORM TẠO & PHÁT THÔNG BÁO MỚI */}
+                <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4 shadow-2xs">
+                  <div className="border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping"></span>
+                    <h4 className="font-black text-navy text-xs uppercase tracking-wider">
+                      📝 TẠO & NẠP THÔNG BÁO PHÁT TOÀN SÀN
+                    </h4>
+                  </div>
+
+                  <form onSubmit={handlePublishSystemAnnouncement} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Phân loại thông báo */}
+                      <div>
+                        <label className="block font-extrabold text-gray-700 mb-1">
+                          Phân loại loại hình thông báo:
+                        </label>
+                        <select 
+                          value={announcementForm.type}
+                          onChange={(e) => setAnnouncementForm({ ...announcementForm, type: e.target.value })}
+                          className="w-full bg-slate-50 border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs font-black text-navy focus:outline-none focus:border-red-500 cursor-pointer"
+                        >
+                          <option value="ANNOUNCEMENT">📢 Thông Báo Mới (Nổi Bật)</option>
+                          <option value="PROMOTION">🎁 Siêu Khuyến Mãi / Ưu Đãi Hè</option>
+                          <option value="URGENT">🚨 Cảnh Báo Khẩn Cấp / An Ninh</option>
+                          <option value="MAINTENANCE">🛠️ Cập Nhật Bảo Trì Hệ Thống</option>
+                        </select>
+                      </div>
+
+                      {/* Tiêu đề */}
+                      <div className="sm:col-span-2">
+                        <label className="block font-extrabold text-gray-700 mb-1">
+                          Tiêu đề thông báo nổi bật:
+                        </label>
+                        <input 
+                          type="text" 
+                          value={announcementForm.title}
+                          onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                          required
+                          placeholder="Ví dụ: 🎉 CHÀO THÁNG 8 - TẶNG 50K XU VÍ TQ PAY CHO TOÀN BỘ KHÁCH HÀNG!" 
+                          className="w-full bg-slate-50 border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs font-black text-navy focus:outline-none focus:border-red-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Nội dung chi tiết */}
+                    <div>
+                      <label className="block font-extrabold text-gray-700 mb-1">
+                        Nội dung chi tiết thông báo gửi khách hàng:
+                      </label>
+                      <textarea 
+                        value={announcementForm.content}
+                        onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
+                        required
+                        rows={4}
+                        placeholder="Nhập nội dung chi tiết bài viết thông báo..."
+                        className="w-full bg-slate-50 border border-gray-300 rounded-xl p-3.5 text-xs font-medium text-gray-800 focus:outline-none focus:border-red-500"
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={isPublishingBroadcast}
+                      className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-700 text-white font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 border border-amber-300"
+                    >
+                      <i className={`fa-solid ${isPublishingBroadcast ? 'fa-spinner fa-spin' : 'fa-paper-plane'} text-amber-300 text-sm`}></i>
+                      <span>{isPublishingBroadcast ? 'ĐANG PHÁT THÔNG BÁO...' : '🚀 PHÁT THÔNG BÁO TOÀN HỆ THỐNG NGAY'}</span>
+                    </button>
+                  </form>
                 </div>
 
               </div>
