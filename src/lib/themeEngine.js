@@ -161,8 +161,10 @@ export const saveSystemThemeConfig = async (themeName, updatedBy = 'Admin') => {
 
 // 5. Kết nối Supabase Realtime để lắng nghe sự thay đổi giao diện từ Admin theo thời gian thực
 export const subscribeSystemThemeRealtime = (onThemeChange) => {
-  const subscription = supabase
-    .channel('realtime_system_theme_channel')
+  const channelName = `realtime_system_theme_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+  const channel = supabase
+    .channel(channelName)
     .on(
       'postgres_changes',
       {
@@ -186,6 +188,6 @@ export const subscribeSystemThemeRealtime = (onThemeChange) => {
     .subscribe();
 
   return () => {
-    supabase.removeChannel(subscription);
+    supabase.removeChannel(channel);
   };
 };

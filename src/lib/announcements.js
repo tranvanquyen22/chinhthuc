@@ -96,8 +96,10 @@ export const createSystemAnnouncement = async (announcementData) => {
 
 // 4. Kết nối Supabase Realtime phát thông báo tức thì tới tất cả thiết bị đang truy cập
 export const subscribeAnnouncementsRealtime = (onNewAnnouncement) => {
-  const subscription = supabase
-    .channel('realtime_announcements_channel')
+  const channelName = `realtime_announcements_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  
+  const channel = supabase
+    .channel(channelName)
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'system_announcements' },
@@ -117,7 +119,7 @@ export const subscribeAnnouncementsRealtime = (onNewAnnouncement) => {
     .subscribe();
 
   return () => {
-    supabase.removeChannel(subscription);
+    supabase.removeChannel(channel);
   };
 };
 

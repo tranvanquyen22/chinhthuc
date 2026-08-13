@@ -103,8 +103,9 @@ export default function SuperAdminModal({ isOpen, onClose, onOpenAddProduct }) {
     loadAdminData();
 
     // 1. Lắng nghe thay đổi Realtime CSDL Supabase Cloud cho bảng Tài khoản, Reset Pass, Rút tiền & Nạp tiền
+    const channelName = `public-db-user-sync_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const channel = supabase
-      .channel('public-db-user-sync')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tq_registered_users' }, async () => {
         const cloudUsers = await getCloudRegisteredUsers();
         setRegisteredUsers(cloudUsers);
